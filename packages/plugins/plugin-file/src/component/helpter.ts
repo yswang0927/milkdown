@@ -5,9 +5,7 @@ export function defIfNotExists(tagName: string, element: CustomElementConstructo
     return
   }
 
-  if (current === element) {
-    return
-  }
+  if (current === element) return
 
   console.warn(`Custom element ${tagName} has been defined before.`)
 }
