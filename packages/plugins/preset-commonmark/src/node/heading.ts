@@ -18,12 +18,28 @@ const headingIndex = Array(6)
   .fill(0)
   .map((_, i) => i + 1)
 
+// yswang
+const hashCode = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const c = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + c;
+    hash |= 0; // 使用按位或运算符确保hash为32位整数
+  }
+  return hash;
+};
+
+
 function defaultHeadingIdGenerator(node: Node) {
+  // yswang 使用hashcode计算id
+  return 'H' + hashCode(node.textContent.trim().replace(/\s+/g, '-'));
+  /*
   return node.textContent
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/\s+/g, '-')
+  */
 }
 
 /// This is a slice contains a function to generate heading id.
