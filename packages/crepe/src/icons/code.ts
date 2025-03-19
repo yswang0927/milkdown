@@ -1,21 +1,5 @@
 import { html } from 'atomico'
 
 export const codeIcon = html`
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-  >
-    <g clip-path="url(#clip0_977_8081)">
-      <path
-        d="M9.4 16.6L4.8 12L9.4 7.4L8 6L2 12L8 18L9.4 16.6ZM14.6 16.6L19.2 12L14.6 7.4L16 6L22 12L16 18L14.6 16.6Z"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_977_8081">
-        <rect width="24" height="24" />
-      </clipPath>
-    </defs>
-  </svg>
+<svg width="1em" height="1em" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="currentColor" overflow="hidden"><path d="M958.17 447.4L760.69 249.92l-65.82 65.83 197.47 197.47L694.87 710.7l65.82 65.82 197.48-197.47 65.83-65.83zM263.3 249.92L65.82 447.4 0 513.22l65.82 65.83L263.3 776.52l65.82-65.82-197.47-197.48 197.47-197.47zm79.947 699.563L590.96 52.19l89.72 24.768-247.713 897.295z"/></svg>
 `
