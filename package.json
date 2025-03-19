@@ -24,7 +24,7 @@
     "ci:version": "changeset version && pnpm install --no-frozen-lockfile",
     "ci:publish": "pnpm build:packs && pnpm publish --access public -r --no-git-checks --tag latest",
     "graph": "nx dep-graph",
-    "clear": "rimraf 'packages/*/{lib,tsconfig.tsbuildinfo,node_modules,.rollup.cache}' && rimraf node_modules",
+    "clear": "rimraf node_modules packages/*/lib packages/*/tsconfig.tsbuildinfo packages/*/node_modules packages/*/.rollup.cache packages/plugins/*/node_modules packages/plugins/*/lib",
     "changeset": "changeset && node scripts/changelog.mjs",
     "release": "changeset publish",
     "commit": "git-cz",
