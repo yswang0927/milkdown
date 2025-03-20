@@ -43,6 +43,8 @@ const server = Server.configure({
 
   async onConnect(data) {
     console.log(`>>> New hocuspocus-websocket<${data.socketId}> connection created.`);
+    // 如果需要针对某个连接客户端禁用认证，可以这样配置
+    //data.connection.requiresAuthentication = false;
   },
 
   /**
@@ -65,7 +67,8 @@ const server = Server.configure({
    *     },
    *   } 
    */
-  /*async onAuthenticate(data) {
+  onAuthenticate(data) {
+    console.info('>>> onAuthenticate: ', data.token, data.requestParameters);
     const { token } = data;
 
     // Demo示例
@@ -74,13 +77,16 @@ const server = Server.configure({
     }
 
     // 您可以设置上下文数据，以便在其他钩子中使用它
-    return {
-      user: {
-        id: 1234,
-        name: "John",
-      },
-    };
-  },*/
+    // 示例：返回一个用户信息
+    return new Promise((resolve, reject) => {
+      resolve({
+        user: {
+          id: 1234,
+          name: "John",
+        },
+      });
+    });
+  },
 
   /**
    * 调用onLoadDocument钩子从存储中获取现有数据。
@@ -134,7 +140,12 @@ const server = Server.configure({
       }
     }),*/
     new Database({
-      fetch: async(data) => {
+      fetch: (data) => {
+        
+        // 如果前面配置的 onAuthenticate 认证成功了，
+        // 则可以从 data.context 获取到 onAuthenticate() 返回的值。
+        // eg. let user = data.context;
+
         return new Promise((resolve, reject) => {
           console.log('>>> 从数据库读取 ', data.documentName);
           let sql = "select data from yjs_data where doc_id = $1";
@@ -154,7 +165,7 @@ const server = Server.configure({
 
         });
       },
-      store: async(data) => {
+      store: (data) => {
         console.log('>>> 存入数据库', data.state);
         let sql = "insert into yjs_data(doc_id, data) values($1, $2) on conflict (doc_id) do update set data = excluded.data";
         dbClient.query(sql, [data.documentName, data.state], (err, result) => {
@@ -166,6 +177,8 @@ const server = Server.configure({
           console.log('>>> save-to-db = ', result.rowCount);
           //resolve(result.rows[0]);
         });
+
+        return new Promise();
       }
     })
   ]
