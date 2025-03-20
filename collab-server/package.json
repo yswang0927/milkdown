@@ -1,0 +1,25 @@
+{
+  "name": "collab-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "yjs collab server use Hocuspocus",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hocuspocus/extension-database": "^2.15.2",
+    "@hocuspocus/extension-logger": "^2.15.2",
+    "@hocuspocus/extension-redis": "^2.15.2",
+    "@hocuspocus/extension-webhook": "^2.15.2",
+    "@hocuspocus/server": "^2.15.2",
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.24"
+  },
+  "devDependencies": {
+    "pg": "^8.14.1"
+  }
+}
