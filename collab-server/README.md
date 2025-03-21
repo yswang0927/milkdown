@@ -18,21 +18,75 @@
 前端使用方式：
 
 ```js
+let doc = new Doc();
+
+// see https://tiptap.dev/docs/hocuspocus/provider/configuration
 let provider = new HocuspocusProvider({
   url: "ws://127.0.0.1:2345",
-  name: 'doc_id_or_name_or_room_name',
-  document: Doc,
+  name: "doc_id/name_or_room_name",
+  document: doc,
   connect: true,
-  onAwarenessUpdate({ states }) {
-    console.log('>>> onAwarenessUpdate ', states);
+  // 如果客户端需要进行认证，则需要配置此 token 属性，
+  // 同时服务端也必须开启 onAuthenticate(){} 配置
+  token: 't123456',
+  // 可以发送一些额外请求参数
+  parameters: {
+    'param1': 'p001',
+    'param2': 'p002',
+  },
+  // 当 WebSocket 连接创建时
+  onOpen(data) {
+    console.log('>>> onOpen');
+  },
+  // 当连接上websocket时
+  onConnect() {
+    console.log('>>> onConnect');
+  },
+  // 当感知发送变化时，通常是人员信息等
+  /*onAwarenessUpdate(data) {
+    console.log('>>> onAwarenessUpdate ', data.states);
+  },
+  onAwarenessChange(data) {
+    console.log('>>> onAwarenessChange ', data);
+  },*/
+  // 当客户端已成功验证时
+  onAuthenticated() {
+    console.log('>>> onAuthenticated');
+  },
+  // 当客户端身份验证不成功时
+  onAuthenticationFailed(data) {
+    console.error('>>> onAuthenticationFailed: ', data);
+  },
+  // 当接收到消息时，这个方法会被高频的调用
+  /*onMessage(data) {
+    console.log('>>> onMessage: ', data);
+  },*/
+  /*onStatus(data) {
+
+  },*/
+  /*onSynced(data) {
+
+  },*/
+  // 当服务提供商断开连接时
+  onDisconnect(data) {
+    console.log('>>> onDisconnect: ', data);
   },
 });
 
+// 设置用户信息
 provider.setAwarenessField("user", {"name":"user1", "color": "#ff0000"});
 //provider.awareness.setLocalStateField('user', {"name":"user1", "color": "#ff0000"});
 
-providerrovider.on('status', (payload: { status: string }) => {
-  this.doms.status.textContent = payload.status;
+// 当连接状态发生改变时，接收websocket连接状态并显示: connecting | connected | disconnected
+provider.on('status', (data: { status: string }) => {
+  console.log(`>>> 当前连接状态：${data.status}`);
+});
+
+// 当Y.js文档同步成功时（初始化阶段）
+provider.on('synced', (data: {state: boolean}) => {
+  if (data && data.state) {
+    // your code
+  }
 });
 
 ```

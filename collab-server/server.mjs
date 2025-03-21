@@ -25,7 +25,7 @@ await dbClient.connect((err) => {
 
 
 
-// 文档：https://tiptap.dev/docs/hocuspocus
+// 文档：https://tiptap.dev/docs/hocuspocus/server/configuration
 
 const server = Server.configure({
   // 实例的名称，用于日志记录。
@@ -95,9 +95,6 @@ const server = Server.configure({
    * 您仍然可以存储 JSON/HTML 文档，但将其更多地视为数据的“视图”，而不是数据源。
    * 
    * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
-   * 
-   * @param {*} data 
-   * @returns 
    */
   /*async onLoadDocument(data) {
     console.log('>>>> onLoadDocument ', data.documentName);
@@ -108,8 +105,6 @@ const server = Server.configure({
    * 当文档被更改时触发。
    * （与onChange相同，但已配置了防抖动）
    * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
-   * 
-   * @param {*} data 
    */
   /*async onStoreDocument(data) {
     console.log('>>> onStoreDocument', data.documentName);
@@ -141,7 +136,6 @@ const server = Server.configure({
     }),*/
     new Database({
       fetch: (data) => {
-        
         // 如果前面配置的 onAuthenticate 认证成功了，
         // 则可以从 data.context 获取到 onAuthenticate() 返回的值。
         // eg. let user = data.context;
