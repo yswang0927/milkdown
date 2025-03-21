@@ -1,16 +1,14 @@
 # :baby_bottle:&nbsp;&nbsp;Milkdown
 
-[![ci][ci-badge]][ci-link]
-![ts][ts-badge]
-[![download-badge]][download-link]
-![version][version-badge]
-[![discord-badge]][discord-link]
-![commit][commit-badge]
-![license][license-badge]
-
 <div align="center">
   <img src="/assets/logo.svg" />
 </div>
+
+------
+
+### 修改源码，增加 `collab-server`，`plugin-highlightmark`，`plugin-underline`、`plugin-file`等插件。
+
+------
 
 A plugin-driven WYSIWYG markdown Editor, inspired by [Typora](https://typora.io/),
 built on top of [prosemirror](https://prosemirror.net/) and [remark](https://github.com/remarkjs/remark).
