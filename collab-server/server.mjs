@@ -6,31 +6,90 @@ import pg from 'pg';
 
 
 // 测试存储到pg数据库中
-const dbClient = new pg.Client({
+
+// pg数据库连接池
+const dbPool = new pg.Pool({
   host: '127.0.0.1',
   port: 5432,
   user: 'postgres',
   password: 'postgres@123',
   database: 'postgres',
-  ssl: false
-});
-await dbClient.connect((err) => {
-  if (err) {
-    console.error('>>> 连接pg数据库失败：', err);
-  }
-  else {
-    console.info('>>> 连接pg数据库成功');
-  }
+  ssl: false,
+  max: 20,
+  min: 2,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+  maxLifetimeSeconds: 3600,
 });
 
+// 数据库扩展
+const pgExtension = new Database({
+  fetch: async ({documentName}) => {
+    // 如果前面配置的 onAuthenticate 认证成功了，
+    // 则可以从 data.context 获取到 onAuthenticate() 返回的值。
+    // eg. let user = data.context;
 
+    console.log('>>> 从数据库读取 ', documentName);
+
+    const sql = "SELECT data FROM yjs_data WHERE doc_id = $1";
+    const sqlParams = [documentName];
+
+    const result = await dbPool.query(sql, sqlParams);
+    if (result.rows.length > 0) {
+      return result.rows[0].data;
+    }
+    
+    return null;
+  },
+
+  store: async ({documentName, state}) => {
+    const sql = "INSERT INTO yjs_data(doc_id, data) VALUES($1, $2) ON CONFLICT(doc_id) DO UPDATE SET data = EXCLUDED.data";
+    const sqlParams = [documentName, state];
+
+    try {
+      const result = await dbPool.query(sql, sqlParams);
+      console.log('>>> save-to-db = ', result.rowCount);
+    } catch (e) {
+      console.error('>>> failed-save-to-db ', e);
+      throw e;
+    }
+  }
+});
+// 在 Hocuspocus 服务器启动之前，对插件进行配置和初始化
+pgExtension.onConfigure = async (data) => {
+  // 启动时创建yjs数据表
+  const table_ddl = `CREATE TABLE IF NOT EXISTS public.yjs_data (
+    "doc_id" varchar(255) NOT NULL,
+    "data" bytea NULL,
+    CONSTRAINT yjs_data_pk PRIMARY KEY (doc_id)
+  )`;
+  const result = await dbPool.query(table_ddl);
+  console.log('>>> create-table-if-notexists: ', result);
+};
+
+// 注册服务端扩展包
+const serverExtensions = [
+  /* 当服务端水平扩展时，可以通过配置Redis来实现多个服务端节点之间的数据同步
+    Redis 扩展与数据库扩展配合良好。一旦一个实例存储了文档，所有其他实例都会被阻止，以避免写入冲突。
+  */
+  /*new Redis({
+    host: "127.0.0.1",
+    port: 6379,
+    options: {
+      db: 6 // Database index to use.
+    }
+  }),*/
+  
+  // 使用这个数据库扩展，可以替代 onStoreDocument 和 onLoadDocument 两者。
+  pgExtension,
+];
 
 // 文档：https://tiptap.dev/docs/hocuspocus/server/configuration
 
 const server = Server.configure({
   // 实例的名称，用于日志记录。
   name: 'markdown-collab-server',
-  address: '127.0.0.1',
+  address: '0.0.0.0',
   port: 2345,
   // 连接健康检查间隔（以毫秒为单位）。
   timeout: 30000,
@@ -67,7 +126,7 @@ const server = Server.configure({
    *     },
    *   } 
    */
-  onAuthenticate(data) {
+  async onAuthenticate(data) {
     console.info('>>> onAuthenticate: ', data.token, data.requestParameters);
     const { token } = data;
 
@@ -78,14 +137,12 @@ const server = Server.configure({
 
     // 您可以设置上下文数据，以便在其他钩子中使用它
     // 示例：返回一个用户信息
-    return new Promise((resolve, reject) => {
-      resolve({
-        user: {
-          id: 1234,
-          name: "John",
-        },
-      });
-    });
+    return {
+      user: {
+        id: 1234,
+        name: "John"
+      }
+    };
   },
 
   /**
@@ -94,7 +151,8 @@ const server = Server.configure({
    * 为了让 Y.js 正常工作，我们需要存储更改历史记录。只有这样才能合并来自多个来源的更改。
    * 您仍然可以存储 JSON/HTML 文档，但将其更多地视为数据的“视图”，而不是数据源。
    * 
-   * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
+   * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！
+   * 我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
    */
   /*async onLoadDocument(data) {
     console.log('>>>> onLoadDocument ', data.documentName);
@@ -102,9 +160,10 @@ const server = Server.configure({
   },*/
 
   /**
-   * 当文档被更改时触发。
-   * （与onChange相同，但已配置了防抖动）
-   * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
+   * 当文档被更改时触发， 与onChange相同，但已配置了防抖。
+   * 
+   * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！
+   * 我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
    */
   /*async onStoreDocument(data) {
     console.log('>>> onStoreDocument', data.documentName);
@@ -114,68 +173,18 @@ const server = Server.configure({
     console.log(`>>> Server is listening on port "${data.port}"!`);
   },*/
 
-  onDisconnect(data) {
+  async onDisconnect(data) {
     console.log('>>> onDisconnect ', data.clientsCount, data.socketId);
   },
 
   async onDestroy(data) {
-    dbClient.end();
+    dbPool.end(() => {
+      console.log('>>> Node-PG pool shutdown!');
+    });
     console.log(`>>> Server was shutdown!`);
   },
 
-  extensions: [
-    /* 当服务端水平扩展时，可以通过配置Redis来实现多个服务端节点之间的数据同步
-      Redis 扩展与数据库扩展配合良好。一旦一个实例存储了文档，所有其他实例都会被阻止，以避免写入冲突。
-    */
-    /*new Redis({
-      host: "127.0.0.1",
-      port: 6379,
-      options: {
-        db: 6 // Database index to use.
-      }
-    }),*/
-    new Database({
-      fetch: (data) => {
-        // 如果前面配置的 onAuthenticate 认证成功了，
-        // 则可以从 data.context 获取到 onAuthenticate() 返回的值。
-        // eg. let user = data.context;
-
-        return new Promise((resolve, reject) => {
-          console.log('>>> 从数据库读取 ', data.documentName);
-          let sql = "select data from yjs_data where doc_id = $1";
-          dbClient.query(sql, [data.documentName], (err, result) => {
-            if (err) {
-              reject(err);
-              return;
-            }
-            console.log('>>>>  fetch-from-db:', result.rowCount);
-            if (result.rowCount == 0) {
-              resolve(null);
-            } else {
-              // eg. rows = [{field: value, ...}]
-              resolve(result.rows[0].data);
-            }
-          });
-
-        });
-      },
-      store: (data) => {
-        console.log('>>> 存入数据库', data.state);
-        let sql = "insert into yjs_data(doc_id, data) values($1, $2) on conflict (doc_id) do update set data = excluded.data";
-        dbClient.query(sql, [data.documentName, data.state], (err, result) => {
-          if (err) {
-            reject(err);
-            console.error('>>>  failed to save to db', err);
-            return;
-          }
-          console.log('>>> save-to-db = ', result.rowCount);
-          //resolve(result.rows[0]);
-        });
-
-        return new Promise();
-      }
-    })
-  ]
+  extensions: serverExtensions
 
 });
 
