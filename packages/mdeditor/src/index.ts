@@ -69,7 +69,7 @@ export class MarkdownEditor {
                     }
                 },
                 [Crepe.Feature.Placeholder]: {
-                    text: '输入 “/” 可快速插入内容，或“Command+/”可唤起AI助手',
+                    text: '输入 “/” 可快速插入内容',
                 },
                 [Crepe.Feature.BlockEdit]: {
                     slashMenuTextGroupLabel: '普通',
@@ -91,8 +91,6 @@ export class MarkdownEditor {
                     slashMenuCodeBlockLabel: '代码块',
                     slashMenuTableLabel: '表格',
                     slashMenuMathLabel: '数学公式',
-                    slashMenuAIGroupLabel: 'AI',
-                    slashMenuAIWriterLabel: 'AI创作',
 
                     buildMenu: (builder) => {
                         const advanced = builder.getGroup('advanced')
@@ -199,18 +197,9 @@ export class MarkdownEditor {
 
         });
 
-        //crepe.editor.use(collab);
+        crepe.editor.use(collab);
         crepe.editor.use(upload);
         crepe.editor.use(filePicker);
-
-
-        // 多人协作
-        /*crepe.editor.action((ctx) => {
-            const collabService = ctx.get(collabServiceCtx);
-            const collabManager = new CollabManager(collabService);
-            collabManager.flush(this.options.defaultValue || '');
-        });*/
-
 
         /*if (this.options.splitEditing) {
             crepe.editor.use(splitEditing);
@@ -218,6 +207,13 @@ export class MarkdownEditor {
 
         crepe.create().then(() => {
             this.inited = true;
+
+            // 多人协作
+            crepe.editor.action((ctx) => {
+                const collabService = ctx.get(collabServiceCtx);
+                const collabManager = new CollabManager(collabService);
+                collabManager.flush(this.options.defaultValue || '');
+            });
 
             if (this.options.autofocus) {
                 crepe.editor.ctx.get(editorViewCtx).dom.focus();

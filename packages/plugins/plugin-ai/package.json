@@ -1,8 +1,12 @@
 {
-  "name": "@milkdown/mdeditor",
+  "name": "@milkdown/plugin-ai",
   "type": "module",
-  "version": "1.0.0",
+  "version": "7.6.4",
   "license": "MIT",
+  "keywords": [
+    "milkdown",
+    "milkdown plugin"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -25,29 +29,29 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite",
     "start": "concurrently -n es,dts \"vite build --watch\"  \"tsc --emitDeclarationOnly --watch\"",
     "test": "vitest",
     "tsc": "tsc --noEmit && echo",
-    "build": "vite build"
+    "build": "tsc --emitDeclarationOnly && vite build"
+  },
+  "peerDependencies": {
+    "@milkdown/core": "workspace:*",
+    "@milkdown/ctx": "workspace:*",
+    "@milkdown/prose": "workspace:*",
+    "@milkdown/kit": "workspace:*"
   },
   "dependencies": {
-    "@hocuspocus/provider": "^2.15.2",
-    "@milkdown/core": "workspace:*",
-    "@milkdown/crepe": "workspace:*",
-    "@milkdown/ctx": "workspace:*",
-    "@milkdown/kit": "workspace:*",
-    "@milkdown/plugin-collab": "workspace:*",
-    "@milkdown/plugin-file": "workspace:*",
-    "@milkdown/plugin-highlightmark": "workspace:*",
-    "@milkdown/prose": "workspace:*",
-    "core-js": "^3.40.0",
     "openai": "4.82.0",
-    "tslib": "^2.8.1",
-    "y-prosemirror": "^1.2.15",
-    "y-protocols": "^1.0.6",
-    "y-websocket": "^2.1.0",
-    "yjs": "^13.6.23"
+    "atomico": "^1.75.1",
+    "clsx": "^2.0.0",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@milkdown/core": "workspace:*",
+    "@milkdown/ctx": "workspace:*",
+    "@milkdown/prose": "workspace:*",
+    "@milkdown/kit": "workspace:*",
+    "@milkdown/utils": "workspace:*"
   },
   "nx": {
     "targets": {
