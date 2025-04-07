@@ -1,7 +1,7 @@
 {
   "name": "@milkdown/kit",
   "type": "module",
-  "version": "7.7.0",
+  "version": "7.8.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -344,7 +344,6 @@
     "src"
   ],
   "scripts": {
-    "start": "tsc --watch",
     "test": "vitest",
     "tsc": "tsc --noEmit && echo",
     "build:css": "postcss 'src' --base 'src' --dir 'lib'",

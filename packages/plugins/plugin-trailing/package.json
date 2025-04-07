@@ -1,7 +1,7 @@
 {
   "name": "@milkdown/plugin-trailing",
   "type": "module",
-  "version": "7.7.0",
+  "version": "7.8.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,10 +34,9 @@
     "src"
   ],
   "scripts": {
-    "start": "concurrently -n es,dts \"vite build --watch\"  \"tsc --emitDeclarationOnly --watch\"",
     "test": "vitest",
     "tsc": "tsc --noEmit && echo",
-    "build": "tsc --emitDeclarationOnly && vite build"
+    "build": "rimraf './lib' && tsc --emitDeclarationOnly && vite build"
   },
   "peerDependencies": {
     "@milkdown/core": "^7.2.0",
