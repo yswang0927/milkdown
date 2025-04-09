@@ -61,7 +61,7 @@ export const highlightMarkSchema = $markSchema('mark', () => ({
     parseDOM: [{
         tag: 'mark',
     }],
-    toDOM: (mark) => ['mark', 0],
+    toDOM: (_mark) => ['mark', 0],
     parseMarkdown: {
         match: (node) => node.type === 'mark',
         runner: (state, node, type) => {

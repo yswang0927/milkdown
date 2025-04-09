@@ -1,7 +1,30 @@
 import { Server } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
-import { Redis } from "@hocuspocus/extension-redis";
-import { Doc } from "yjs";
+//import { Redis } from "@hocuspocus/extension-redis";
+//import { Doc } from "yjs";
+import { yXmlFragmentToProseMirrorRootNode } from 'y-prosemirror';
+
+import {
+  init,
+  InitReady,
+  initTimerCtx,
+  remarkCtx,
+  schema,
+  schemaCtx,
+  SchemaReady,
+  serializerCtx,
+  serializer,
+  SerializerReady,
+  parser,
+  ParserReady,
+  parserCtx,
+} from '@milkdown/core';
+import { Clock, Container, Ctx } from '@milkdown/ctx';
+import { schema as commonSchema, commonmark } from '@milkdown/preset-commonmark';
+import { schema as gfmSchema, gfm } from '@milkdown/preset-gfm';
+import { ParserState, SerializerState } from '@milkdown/transformer';
+import { TimerType } from './fake-timer.js';
+
 import pg from 'pg';
 
 
@@ -38,11 +61,59 @@ const pgExtension = new Database({
     if (result.rows.length > 0) {
       return result.rows[0].data;
     }
-    
+
     return null;
   },
 
-  store: async ({documentName, state}) => {
+  store: async ({ documentName, document, state }) => {
+    /*
+    // 在nodejs服务端创建milkdown解析器
+    const clock = new Clock();
+    const container = new Container();
+    const ctx = new Ctx(container, clock);
+
+    const runInit = init({})(ctx);
+    const runSchema = schema(ctx);
+    //const runParser = parser(ctx);
+    //const runSerializer = serializer(ctx);
+
+    const hackTimer = (name, target) => {
+      const fake = new TimerType(name);
+      fake.id = target.id;
+      const result = fake.create(clock.store);
+      clock.store.set(target.id, result);
+      return result;
+    };
+
+    hackTimer('InitReady', InitReady);
+    hackTimer('SchemaReady', SchemaReady);
+    //hackTimer('ParserReady', ParserReady);
+    //hackTimer('SerializerReady', SerializerReady);
+
+    ctx.set(initTimerCtx, []);
+
+    const allSchemas = [commonSchema, gfmSchema].flat(2);
+    await Promise.all([
+      runInit(),
+      runSchema(),
+      //runParser(),
+      //runSerializer(),
+      ...allSchemas.map((node) => node(ctx)()),
+    ]);
+
+    const S = ctx.get(schemaCtx);
+    const R = ctx.get(remarkCtx);
+    //const P = ctx.get(parserCtx);
+    //const SS = ctx.get(serializerCtx);
+    //const parser = ParserState.create(S, R);
+    const serializer2 = SerializerState.create(S, R);
+
+    const xmlFragment = document.getXmlFragment('prosemirror');
+    const pmNode = yXmlFragmentToProseMirrorRootNode(xmlFragment, S);
+    let markdownContent = serializer2(pmNode);
+    console.log('>> markdownContent: \n', markdownContent);
+    */
+
     const sql = "INSERT INTO yjs_data(doc_id, data) VALUES($1, $2) ON CONFLICT(doc_id) DO UPDATE SET data = EXCLUDED.data";
     const sqlParams = [documentName, state];
 
@@ -63,8 +134,8 @@ pgExtension.onConfigure = async (data) => {
     "data" bytea NULL,
     CONSTRAINT yjs_data_pk PRIMARY KEY (doc_id)
   )`;
-  const result = await dbPool.query(table_ddl);
-  console.log('>>> create-table-if-notexists: ', result);
+  await dbPool.query(table_ddl);
+  console.log('>>> create-table-if-notexists: ');
 };
 
 // 注册服务端扩展包
@@ -79,7 +150,7 @@ const serverExtensions = [
       db: 6 // Database index to use.
     }
   }),*/
-  
+
   // 使用这个数据库扩展，可以替代 onStoreDocument 和 onLoadDocument 两者。
   pgExtension,
 ];
@@ -112,7 +183,7 @@ const server = Server.configure({
    * 它应该返回一个 Promise。抛出异常或拒绝 Promise 将终止连接。
    * 请注意，仅在客户端发送了 Auth 消息后才会调用 onAuthenticate 钩子，
    * 如果没有向 HocuspocusProvider 提供令牌，则不会发生这种情况。
-   * 
+   *
    * @param {*} data {
    *     documentName: string,
    *     instance: Hocuspocus,
@@ -124,7 +195,7 @@ const server = Server.configure({
    *     connection: {
    *       readOnly: boolean,
    *     },
-   *   } 
+   *   }
    */
   async onAuthenticate(data) {
     console.info('>>> onAuthenticate: ', data.token, data.requestParameters);
@@ -150,7 +221,7 @@ const server = Server.configure({
    * 您可能习惯在应用程序中加载一些 JSON/HTML 文档，但这不是 Y.js 的方式。
    * 为了让 Y.js 正常工作，我们需要存储更改历史记录。只有这样才能合并来自多个来源的更改。
    * 您仍然可以存储 JSON/HTML 文档，但将其更多地视为数据的“视图”，而不是数据源。
-   * 
+   *
    * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！
    * 我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
    */
@@ -161,7 +232,7 @@ const server = Server.configure({
 
   /**
    * 当文档被更改时触发， 与onChange相同，但已配置了防抖。
-   * 
+   *
    * 实际上，甚至不必使用这两个钩子(onLoadDocument和onStoreDocument)！
    * 我们已经在它们之上以数据库扩展的形式创建了一个简单的抽象。
    */

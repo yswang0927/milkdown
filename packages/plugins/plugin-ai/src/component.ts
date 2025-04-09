@@ -1,6 +1,6 @@
 import type { Component } from 'atomico'
-import { c, html, useEffect, useRef, useState } from 'atomico';
-import clsx from 'clsx';
+import { c, html, useEffect } from 'atomico';
+//import clsx from 'clsx';
 import { AIConfig } from './config';
 
 // yswang add custom-component: copilot

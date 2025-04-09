@@ -48,11 +48,11 @@ export class CollabManager {
             },
             // 当 WebSocket 连接创建时
             onOpen(data) {
-                console.log('>>> onOpen');
+                //console.log('>>> onOpen');
             },
             // 当连接上websocket时
             onConnect() {
-                console.log('>>> onConnect');
+                //console.log('>>> onConnect');
             },
              // 当客户端已成功验证时
              onAuthenticated() {
@@ -65,7 +65,7 @@ export class CollabManager {
             // 当感知发送变化时，通常是人员信息等
             onAwarenessUpdate(data) {
                 // eg. data.states = [{clientId:2233, user:{name, color}, cursor?}, {}]
-                console.log(`>>> 当前参与人员： [${data.states.map(s => s.user.name)}]`, data.states);
+                //console.log(`>>> 当前参与人员： [${data.states.map(s => s.user.name)}]`, data.states);
             },
             /*onAwarenessChange(data) {
                 console.log('>>> onAwarenessChange ', data);

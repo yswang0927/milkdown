@@ -54,7 +54,7 @@
             padding: 5px 10px;
         }
     </style>
- 
+
 </head>
 
 <body>
@@ -67,10 +67,10 @@
         <div id="editor" style="max-width:210mm;min-height:160mm; margin:0 auto;border:1px solid #ccc;background-color: #fff;"></div>
     </div>
 
-   
+
     <script type="module">
         import { MarkdownEditor } from './src/index.ts';
-        
+
         function updateToc(tocs) {
             const toc = document.getElementById('toc_list');
             toc.innerHTML = '';
@@ -94,7 +94,7 @@ On a dark desert **highway**, cool wind in my hair.
 
 `;
 
-        //console.log(mdContent);    
+        //console.log(mdContent);
 
         const editor = window.$mdEditor = new MarkdownEditor('#editor', {
             defaultValue: mdContent,
@@ -103,7 +103,7 @@ On a dark desert **highway**, cool wind in my hair.
                 updateToc(editor.getToc());
             },
             onContentChanged: (mdContent) => {
-                console.log(mdContent);
+                //console.log(mdContent);
                 updateToc(editor.getToc());
             }
         });

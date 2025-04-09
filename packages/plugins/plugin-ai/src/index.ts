@@ -1,15 +1,15 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state";
 import type { EditorState } from "@milkdown/kit/prose/state";
-import type { MilkdownPlugin } from '@milkdown/kit/ctx'
+//import type { MilkdownPlugin } from '@milkdown/kit/ctx'
 import { Ctx } from "@milkdown/kit/ctx";
 import { editorViewCtx, parserCtx, serializerCtx } from "@milkdown/kit/core";
 import { $prose } from "@milkdown/kit/utils";
-import { DOMParser, DOMSerializer } from "@milkdown/kit/prose/model";
+import { DOMSerializer } from "@milkdown/kit/prose/model";
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view";
 import { cloneTr } from "@milkdown/kit/prose";
 import OpenAI from "openai";
 
-import { CopilotElement } from "./component";
+//import { CopilotElement } from "./component";
 
 export * from "./config";
 
@@ -24,7 +24,7 @@ const client = new OpenAI({
 
 async function fetchAIHint(ctx: Ctx, userPrompt: string, systemPrompt: string) {
   const view = ctx.get(editorViewCtx);
-  
+
   let accumulatedText = '';
   let lastUpdateTime = 0;
   const THROTTLE_INTERVAL = 100; // 100ms 的节流间隔
@@ -104,7 +104,7 @@ export function getHint(ctx: Ctx, systemPrompt: string) {
   if (!sliceDoc) {
     return;
   }
-  
+
   const serializer = ctx.get(serializerCtx);
   const theSliceMarkdownPrompt = serializer(sliceDoc);
   view.dispatch(tr.setMeta(copilotKey, "> AI思考中..."));
@@ -158,7 +158,7 @@ export const copilotPlugin = $prose((ctx) => {
   let cachedPosition: number = -1;
   let cachedParser: any | null = null;
   let cachedSerializer: DOMSerializer | null = null;
-  
+
   function getOrCreateWidget(to: number, message: string, state: EditorState) {
     // 创建或复用
     if (cachedPosition !== to || !cachedWidget || !cachedDom) {
@@ -208,7 +208,7 @@ export const copilotPlugin = $prose((ctx) => {
       cachedWidget = Decoration.widget(to + 1, () => copilotDiv!);
       cachedPosition = to;
     }
-    
+
     // 初始化解析器缓存
     if (!cachedParser) {
       cachedParser = ctx.get(parserCtx);
@@ -216,7 +216,7 @@ export const copilotPlugin = $prose((ctx) => {
     if (!cachedSerializer) {
       cachedSerializer = DOMSerializer.fromSchema(state.schema);
     }
-    
+
     // 更新 DOM 内容
     cachedDom!.innerHTML = '';
     let replacedMessage = message;
@@ -237,7 +237,7 @@ export const copilotPlugin = $prose((ctx) => {
     const dom = cachedSerializer.serializeFragment(slice.content);
     cachedDom!.appendChild(dom);
     cachedDom!.scrollTop = cachedDom!.scrollHeight;
-    
+
     return cachedWidget;
   }
 
@@ -245,13 +245,13 @@ export const copilotPlugin = $prose((ctx) => {
     key: copilotKey,
     props: {
       // 监听文档上的键盘事件
-      handleKeyDown(_view, event) {
+      handleKeyDown(_view, _event) {
         /*if (event.key === "Enter") {
           event.preventDefault();
           applyHint(ctx);
           return;
         }*/
-        
+
         /*if (event.key === "/" && event.ctrlKey) {
           event.preventDefault();
           event.stopPropagation();

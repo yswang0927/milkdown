@@ -4,18 +4,18 @@ import 'core-js/actual';
 import { Crepe } from '@milkdown/crepe';
 import { editorViewCtx } from "@milkdown/core";
 import { outline, replaceAll, insert, getHTML } from '@milkdown/kit/utils';
-import { html } from "@milkdown/kit/component";
+//import { html } from "@milkdown/kit/component";
 import { listenerCtx } from '@milkdown/kit/plugin/listener'
 
 import type { Uploader } from "@milkdown/kit/plugin/upload";
-import { upload, uploadConfig, readImageAsBase64 } from "@milkdown/kit/plugin/upload";
+import { upload, uploadConfig } from "@milkdown/kit/plugin/upload";
 import { Decoration } from '@milkdown/prose/view';
 import type { Schema, Node } from '@milkdown/prose/model';
 
-import { collab, collabServiceCtx } from '@milkdown/plugin-collab';
-import { CollabManager } from "./collabmanager";
+//import { collab, collabServiceCtx } from '@milkdown/plugin-collab';
+//import { CollabManager } from "./collabmanager";
 
-import { filePicker, clearContentAndAddBlockType, filePickerNodeBlock } from "@milkdown/plugin-file";
+//import { filePicker, clearContentAndAddBlockType, filePickerNodeBlock } from "@milkdown/plugin-file";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
@@ -92,7 +92,7 @@ export class MarkdownEditor {
                     slashMenuTableLabel: '表格',
                     slashMenuMathLabel: '数学公式',
 
-                    buildMenu: (builder) => {
+                    /*buildMenu: (builder) => {
                         const advanced = builder.getGroup('advanced')
                         advanced.addItem('file', {
                           label: '插入文件',
@@ -114,7 +114,7 @@ export class MarkdownEditor {
                             command(state, dispatch)
                           }
                         })
-                    }
+                    }*/
                 },
                 [Crepe.Feature.ImageBlock]: {
                     blockCaptionPlaceholderText: '图片描述',
@@ -141,12 +141,6 @@ export class MarkdownEditor {
                             reader.readAsDataURL(file);
                         });
                     }
-                },
-                [Crepe.Feature.AI]: {
-                    enabled: true,
-                    base_url: 'http://127.0.0.1:11434/api/',
-                    model: 'deepseek-r1:7b',
-                    api_key: 'ollama',
                 }
             }
         });
@@ -197,9 +191,9 @@ export class MarkdownEditor {
 
         });
 
-        crepe.editor.use(collab);
+        //crepe.editor.use(collab);
         crepe.editor.use(upload);
-        crepe.editor.use(filePicker);
+        //crepe.editor.use(filePicker);
 
         /*if (this.options.splitEditing) {
             crepe.editor.use(splitEditing);
@@ -209,11 +203,11 @@ export class MarkdownEditor {
             this.inited = true;
 
             // 多人协作
-            crepe.editor.action((ctx) => {
+            /*crepe.editor.action((ctx) => {
                 const collabService = ctx.get(collabServiceCtx);
                 const collabManager = new CollabManager(collabService);
                 collabManager.flush(this.options.defaultValue || '');
-            });
+            });*/
 
             if (this.options.autofocus) {
                 crepe.editor.ctx.get(editorViewCtx).dom.focus();

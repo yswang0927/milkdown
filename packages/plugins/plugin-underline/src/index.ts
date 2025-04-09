@@ -61,7 +61,7 @@ const underlineSchema = $markSchema('underline', () => ({
     parseDOM: [{
         tag: 'u',
     }],
-    toDOM: (mark) => ['u', 0],
+    toDOM: (_mark) => ['u', 0],
     parseMarkdown: {
         match: (node) => node.type === 'underline',
         runner: (state, node, type) => {
