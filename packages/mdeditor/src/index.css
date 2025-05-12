@@ -1,0 +1,270 @@
+.milkdown {
+    --crepe-color-background: #fdfcff;
+    --crepe-color-on-background: #1b1c1d;
+    --crepe-color-surface: #f8f9ff;
+    --crepe-color-surface-low: #f2f3fa;
+    --crepe-color-on-surface: #191c20;
+    --crepe-color-on-surface-variant: #43474e;
+    --crepe-color-outline: #616368;
+    --crepe-color-primary: #37618e;
+    --crepe-color-secondary: #d7e3f8;
+    --crepe-color-on-secondary: #101c2b;
+    --crepe-color-inverse: #2e3135;
+    --crepe-color-on-inverse: #eff0f7;
+    --crepe-color-inline-code: #ba1a1a;
+    --crepe-color-error: #ba1a1a;
+    --crepe-color-hover: #eceef4;
+    --crepe-color-selected: #e1e2e8;
+    --crepe-color-inline-area: #d8dae0;
+
+    --crepe-font-title: Rubik, Cambria, 'Times New Roman', Times, serif;
+    --crepe-font-default: Inter, Arial, Helvetica, sans-serif;
+    --crepe-font-code:
+        'JetBrains Mono', Menlo, Monaco, 'Courier New', Courier, monospace;
+
+    --crepe-shadow-1:
+        0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    --crepe-shadow-2:
+        0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+}
+
+html {
+    font-size: 16px;
+}
+
+body {
+    font-size: 0.875rem;
+}
+
+.milkdown {
+    background-color: transparent;
+}
+
+.milkdown .ProseMirror p {
+    font-size: 0.875rem;
+    line-height: 1.8;
+}
+
+.milkdown p.crepe-placeholder,
+.milkdown p.crepe-placeholder::before {
+    font-size: 0.8rem;
+}
+
+.milkdown .ProseMirror {
+    /*padding: 30px 80px;*/
+    padding: 16mm 20mm;
+}
+
+.milkdown-drop-uploading-tip {
+    padding: 2px 4px;
+    border-radius: 4px;
+    background-color: var(--crepe-color-hover);
+    border-radius: 4px;
+}
+
+.milkdown .ProseMirror code {
+    padding-left: 4px;
+    padding-right: 4px;
+    background-color: bisque;
+}
+
+.ͼo .cm-activeLineGutter {
+    background-color: transparent;
+}
+
+
+.milkdown milkdown-link-edit>.link-edit {
+    border-radius: 6px;
+    align-items: center;
+}
+
+.milkdown milkdown-latex-inline-edit {
+    border-radius: 6px;
+    align-items: center;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+
+.milkdown milkdown-block-handle .operation-item svg {
+    width: 20px;
+    height: 20px;
+}
+
+.milkdown milkdown-block-handle .operation-item {
+    width: 26px;
+    height: 26px;
+    line-height: 1.0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.milkdown .ProseMirror blockquote {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+
+    background-color: var(--crepe-color-hover);
+    border-radius: 3px;
+}
+
+.milkdown .ProseMirror blockquote::before {
+    top: 0;
+    bottom: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+
+.milkdown milkdown-image-inline .empty-image-inline {
+    border-radius: 4px;
+}
+
+.milkdown milkdown-code-block {
+    border-radius: 5px;
+}
+
+.milkdown milkdown-code-block .tools .language-button {
+    opacity: 1 !important;
+}
+
+.split-editor {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+.split-editor>div.ProseMirror {
+    flex: 1;
+}
+
+.milkdown-split-editor {
+    flex: 1;
+}
+
+
+.milkdown-copilot-decoration {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    padding: 10px;
+    border: 2px solid transparent;
+    background: linear-gradient(#f8f9fa, #f8f9fa) padding-box, linear-gradient(90deg, red, #f90) border-box;
+    box-shadow: 0 0 0 1px rgba(17, 20, 24, .1), 0 2px 4px rgba(17, 20, 24, .2), 0 8px 24px rgba(17, 20, 24, .2);
+}
+
+.milkdown-copilot-content {
+    min-height: 100px;
+    max-height: 300px;
+    background-color: #fff;
+    border-radius: 4px;
+    padding: 20px 20px;
+    overflow-y: auto;
+}
+
+.milkdown-copilot-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: space-between;
+}
+
+.milkdown-copilot-actions>div {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.milkdown-copilot-actions>.actions-left {
+    flex: 2;
+}
+
+.milkdown-copilot-actions>.actions-right {
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.milkdown-copilot-actions button {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.milkdown-copilot-actions button:hover {
+    background-color: var(--crepe-color-hover);
+}
+
+.milkdown-copilot-actions .copilot-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.0;
+    font-size: 1.5em;
+    margin-right: 4px;
+}
+
+.milkdown-copilot-actions button svg {
+    display: inline-block;
+    line-height: 1.0;
+}
+
+.milkdown-file-attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: var(--crepe-color-hover);
+}
+
+
+/* this is a rough fix for the first cursor position when the first paragraph is empty */
+.ProseMirror>.ProseMirror-yjs-cursor:first-child {
+    margin-top: 16px;
+}
+
+/* This gives the remote user caret. The colors are automatically overwritten*/
+.ProseMirror-yjs-cursor {
+    display: inline-block;
+    position: relative;
+    line-height: inherit;
+    font-size: 1em;
+    width:2px;
+    margin-left: -1px;
+    margin-right: -1px;
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    border-color: orange;
+    word-break: normal;
+    pointer-events: none;
+}
+
+/* This renders the username above the caret */
+.ProseMirror-yjs-cursor>div {
+    position: absolute;
+    top: -1em;
+    left: -1px;
+    margin-top: -1px;
+    font-size: 12px;
+    line-height: 14px;
+    padding: 2px 2px 1px 2px;
+    color: white;
+    background-color: rgb(250, 129, 0);
+    font-family: inherit;
+    font-style: normal;
+    font-weight: normal;
+    user-select: none;
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}

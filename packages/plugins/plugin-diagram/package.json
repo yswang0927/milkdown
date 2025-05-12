@@ -1,0 +1,53 @@
+{
+  "name": "@milkdown/plugin-diagram",
+  "type": "module",
+  "version": "7.10.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Milkdown/milkdown.git",
+    "directory": "packages/plugins/plugin-diagram"
+  },
+  "keywords": [
+    "milkdown",
+    "milkdown plugin",
+    "diagram",
+    "mermaid"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./lib/index.es.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./lib/index.es.js",
+        "types": "./lib/index.d.ts"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@milkdown/exception": "workspace:*",
+    "@milkdown/utils": "workspace:*",
+    "@milkdown/core": "workspace:*",
+    "@milkdown/ctx": "workspace:*",
+    "@milkdown/prose": "workspace:*",
+    "@milkdown/transformer": "workspace:*",
+    "mermaid": "^11.6.0",
+    "nanoid": "^5.0.9",
+    "tslib": "^2.8.1",
+    "unist-util-visit": "^5.0.0"
+  }
+}

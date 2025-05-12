@@ -1,0 +1,42 @@
+{
+  "name": "@milkdown/plugin-highlightmark",
+  "type": "module",
+  "version": "7.10.2",
+  "license": "MIT",
+  "keywords": [
+    "milkdown",
+    "milkdown plugin"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./lib/index.es.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./lib/index.es.js",
+        "types": "./lib/index.d.ts"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build"
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "dependencies": {
+    "@milkdown/core": "workspace:*",
+    "@milkdown/ctx": "workspace:*",
+    "@milkdown/prose": "workspace:*",
+    "@milkdown/utils": "workspace:*",
+    "@milkdown/kit": "workspace:*",
+    "tslib": "^2.8.1"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@milkdown/mdeditor",
+  "type": "module",
+  "version": "1.0.0",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./lib/index.es.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./lib/index.es.js",
+        "types": "./lib/index.d.ts"
+      }
+    }
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@milkdown/core": "workspace:*",
+    "@milkdown/crepe": "workspace:*",
+    "@milkdown/ctx": "workspace:*",
+    "@milkdown/kit": "workspace:*",
+    "@milkdown/plugin-diagram": "workspace:*",
+    "@milkdown/plugin-highlightmark": "workspace:*",
+    "@milkdown/prose": "workspace:*",
+    "core-js": "^3.40.0"
+  }
+}

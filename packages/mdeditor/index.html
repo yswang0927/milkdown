@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown编辑器</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            scrollbar-width: thin;
+        }
+
+        body {
+            font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol","Helvetica Neue","Helvetica","Arial",sans-serif;
+            line-height: 1.4;
+            background-color: var(--bg-color);
+            will-change: transform;
+            scrollbar-width: thin;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        div {
+            scrollbar-width: thin;
+        }
+        #toc {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200px;
+            height: 100%;
+            overflow: auto;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-right: 1px solid #ccc;
+        }
+        #toc_list > a {
+            display: block;
+            padding: 5px 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="toc">
+        <h2>目录</h2>
+        <div id="toc_list"></div>
+    </div>
+
+    <div style="padding: 30px 0 100px 0;">
+        <div id="editor" style="max-width:210mm;min-height:160mm; margin:0 auto;border:1px solid #ccc;background-color: #fff;"></div>
+    </div>
+
+
+    <script type="module">
+        import { MarkdownEditor } from './src/index.ts';
+
+        function updateToc(tocs) {
+            const toc = document.getElementById('toc_list');
+            toc.innerHTML = '';
+            tocs.forEach((item) => {
+                const a = document.createElement('a');
+                a.style.marginLeft = `${(item.level-1) * 10}px`;
+                a.href = `#${item.id}`;
+                a.innerText = item.text;
+                toc.appendChild(a);
+            });
+        }
+
+
+        const mdContent = '以[《红楼梦》] 为主题写一篇[图书解读] ，目的是[读书分享]，以 [作者] 的视角，要求 [文字通俗易懂，具体清晰，善用恰当的举例子或类比] ，重点突出 [解释分析《红楼梦》的影响] 。';
+
+
+const markdown = `
+# Hotel California
+
+On a dark desert **highway**, cool wind in my hair.
+
+\`\`\`mermaid
+flowchart TD
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{Let me think}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+\`\`\`
+`;
+
+        //console.log(mdContent);
+
+        const editor = window.$mdEditor = new MarkdownEditor('#editor', {
+            defaultValue: markdown,
+            splitEditing: true,
+            onReady: () => {
+                updateToc(editor.getToc());
+            },
+            onContentChanged: (mdContent) => {
+                //console.log(mdContent);
+                updateToc(editor.getToc());
+            }
+        });
+    </script>
+</body>
+
+</html>
