@@ -11,6 +11,9 @@ import type { PlaceHolderFeatureConfig } from './placeholder'
 import type { TableFeatureConfig } from './table'
 import type { ToolbarFeatureConfig } from './toolbar'
 
+// yswang
+import type { MermaidFeatureConfig } from './mermaid'
+
 export enum CrepeFeature {
   CodeMirror = 'code-mirror',
   ListItem = 'list-item',
@@ -22,6 +25,8 @@ export enum CrepeFeature {
   Placeholder = 'placeholder',
   Table = 'table',
   Latex = 'latex',
+  // yswang
+  Mermaid = 'mermaid',
 }
 
 export interface CrepeFeatureConfig {
@@ -35,6 +40,8 @@ export interface CrepeFeatureConfig {
   [CrepeFeature.CodeMirror]?: CodeMirrorFeatureConfig
   [CrepeFeature.Table]?: TableFeatureConfig
   [CrepeFeature.Latex]?: LatexFeatureConfig
+  // yswang
+  [CrepeFeature.Mermaid]?: MermaidFeatureConfig
 }
 
 export const defaultFeatures: Record<CrepeFeature, boolean> = {
@@ -48,6 +55,8 @@ export const defaultFeatures: Record<CrepeFeature, boolean> = {
   [CrepeFeature.CodeMirror]: true,
   [CrepeFeature.Table]: true,
   [CrepeFeature.Latex]: true,
+  // yswang
+  [CrepeFeature.Mermaid]: true,
 }
 
 export async function loadFeature(
@@ -94,6 +103,11 @@ export async function loadFeature(
     }
     case CrepeFeature.Latex: {
       const { defineFeature } = await import('./latex')
+      return defineFeature(editor, config)
+    }
+    // yswang
+    case CrepeFeature.Mermaid: {
+      const { defineFeature } = await import('./mermaid')
       return defineFeature(editor, config)
     }
   }
