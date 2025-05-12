@@ -5,6 +5,7 @@ import {
   insertDiagramInputRules,
   mermaidConfigCtx,
   remarkDiagramPlugin,
+  //blockMermaidSchema,
 } from './node'
 
 export * from './node'
@@ -16,4 +17,5 @@ export const diagram: MilkdownPlugin[] = [
   diagramSchema,
   insertDiagramCommand,
   insertDiagramInputRules,
+  //blockMermaidSchema,
 ].flat()

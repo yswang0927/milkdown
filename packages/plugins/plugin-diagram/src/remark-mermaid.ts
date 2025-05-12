@@ -20,7 +20,14 @@ function visitCodeBlock(ast: Node) {
         return node;
       }
 
-      const newNode = createMermaidDiv(value);
+      //const newNode = createMermaidDiv(value);
+
+      // yswang
+      const newNode = {
+        type: 'code',
+        lang: 'mermaid',
+        value: value,
+      }
 
       if (parent && index != null) {
         parent.children.splice(index, 1, newNode);

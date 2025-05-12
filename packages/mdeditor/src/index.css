@@ -129,6 +129,22 @@ body {
     opacity: 1 !important;
 }
 
+.milkdown .milkdown-slash-menu {
+    border-radius: 6px;
+}
+.milkdown .milkdown-slash-menu .tab-group {
+    padding: 0;
+}
+.milkdown .milkdown-slash-menu .tab-group ul li {
+    font-size: 1em;
+    border-radius: 5px;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group li {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
 .split-editor {
     display: flex;
     flex-direction: row;

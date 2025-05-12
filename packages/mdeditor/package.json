@@ -33,7 +33,6 @@
     "@milkdown/crepe": "workspace:*",
     "@milkdown/ctx": "workspace:*",
     "@milkdown/kit": "workspace:*",
-    "@milkdown/plugin-diagram": "workspace:*",
     "@milkdown/plugin-highlightmark": "workspace:*",
     "@milkdown/prose": "workspace:*",
     "core-js": "^3.40.0"

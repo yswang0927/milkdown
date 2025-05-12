@@ -54,13 +54,30 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
 function renderMermaid(content: string, config?: MermaidConfig) {
   const graphId = 'mermaid'+ Date.now();
   let dom = document.createElement('div');
-  dom.dataset.id = graphId;
   dom.id = graphId;
   
-  mermaid.render('graph_'+ graphId, content).then((output: any) => {
-    const ele = document.querySelector('#'+ dom.dataset.id);
-    ele && output.svg && (ele.innerHTML = output.svg);
-  });
+  (function(divId) {
+    try {
+      mermaid.parseError = (err) => {
+        const ele = document.querySelector('#'+ divId);
+        ele && (ele.innerHTML = `<span style='color:red;'>Mermaid语法错误: ${err}</span>`);
+      };
+      
+      mermaid.render('graph_'+ divId, content).then((output: any) => {
+        let time = Date.now();
+        let ele;
+        while (!(ele = document.querySelector('#'+ divId))) {
+          if (Date.now() - time > 2000) {
+            console.error('Mermaid渲染失败，没有找到渲染节点: div#'+ divId);
+            return;
+          }
+        }
+        ele && (ele.innerHTML = output.svg);
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  })(graphId);
 
   return dom;
 }

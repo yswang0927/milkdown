@@ -8,12 +8,43 @@ import {
   $nodeSchema,
   $remark,
 } from '@milkdown/utils'
+
+import { codeBlockSchema } from '@milkdown/kit/preset/commonmark'
+
 import type { MermaidConfig } from 'mermaid'
 import mermaid from 'mermaid'
 
 import { remarkMermaid } from './remark-mermaid'
 import { getId } from './__internal__/get-id'
 import { withMeta } from './__internal__/with-meta'
+
+
+export const blockMermaidSchema = codeBlockSchema.extendSchema((prev) => {
+  return (ctx) => {
+    const baseSchema = prev(ctx)
+    mermaid.initialize({
+      ...ctx.get(mermaidConfigCtx.key),
+    })
+    return {
+      ...baseSchema,
+      toMarkdown: {
+        match: baseSchema.toMarkdown.match,
+        runner: (state, node) => {
+          const language = node.attrs.language ?? ''
+          if (language.toLowerCase() === 'mermaid') {
+            state.addNode(
+              'mermaid',
+              undefined,
+              node.content.firstChild?.text || ''
+            )
+          } else {
+            return baseSchema.toMarkdown.runner(state, node)
+          }
+        },
+      },
+    }
+  }
+})
 
 /// A slice that contains [options for mermaid](https://mermaid.js.org/config/setup/modules/config.html).
 /// You can configure mermaid here.
@@ -81,9 +112,13 @@ export const diagramSchema = $nodeSchema(id, (ctx) => {
       dom.textContent = code;
 
       // yswang
-      mermaid.render('graphDiv'+ identity, code).then((output) => {
-        dom.innerHTML = output.svg;
-      });
+      try {
+        mermaid.render('graphDiv'+ identity, code).then((output) => {
+          dom.innerHTML = output.svg;
+        });
+      } catch(e) {
+
+      }
 
       return dom;
     },

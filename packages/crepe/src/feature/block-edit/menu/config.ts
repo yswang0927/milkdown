@@ -37,6 +37,7 @@ import {
   tableIcon,
   textIcon,
   todoListIcon,
+  graphIcon,
 } from '../../../icons'
 import { GroupBuilder } from './group-builder'
 import {
@@ -55,6 +56,8 @@ export function getGroups(
   const isLatexEnabled = flags?.includes(CrepeFeature.Latex)
   const isImageBlockEnabled = flags?.includes(CrepeFeature.ImageBlock)
   const isTableEnabled = flags?.includes(CrepeFeature.Table)
+  // yswang
+  const isMermaidEnabled = flags?.includes(CrepeFeature.Mermaid)
 
   const groupBuilder = new GroupBuilder()
   groupBuilder
@@ -285,6 +288,23 @@ export function getGroups(
 
         const command = clearContentAndAddBlockType(codeBlockSchema.type(ctx), {
           language: 'LaTex',
+        })
+        command(state, dispatch)
+      },
+    })
+  }
+
+  // yswang
+  if (isMermaidEnabled) {
+    advancedGroup.addItem('mermaid', {
+      label: config?.slashMenuMermaidLabel ?? 'Mermaid',
+      icon: config?.slashMenuGraphIcon?.() ?? graphIcon,
+      onRun: (ctx) => {
+        const view = ctx.get(editorViewCtx)
+        const { dispatch, state } = view
+
+        const command = clearContentAndAddBlockType(codeBlockSchema.type(ctx), {
+          language: 'mermaid',
         })
         command(state, dispatch)
       },

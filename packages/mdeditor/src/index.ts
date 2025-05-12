@@ -12,7 +12,7 @@ import { upload, uploadConfig } from "@milkdown/kit/plugin/upload";
 import { Decoration } from '@milkdown/prose/view';
 import type { Schema, Node } from '@milkdown/prose/model';
 
-import { mermaidConfigCtx, diagram } from '@milkdown/plugin-diagram'
+//import { mermaidConfigCtx, diagram, blockMermaidSchema } from '@milkdown/plugin-diagram'
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
@@ -45,7 +45,7 @@ export class MarkdownEditor {
     private init(): void {
 
         const defaultUpload = async (file: File) => {
-            return Promise.resolve(URL.createObjectURL(file))
+            return URL.createObjectURL(file)
         };
 
         const crepe = this.crepe = new Crepe({
@@ -62,7 +62,7 @@ export class MarkdownEditor {
                 [Crepe.Feature.LinkTooltip]: {
                     inputPlaceholder: '输入链接地址',
                     onCopyLink: (link) => {
-                        console.log('>>> 拷贝了链接：', link);
+                        //console.log('>>> 拷贝了链接：', link);
                     }
                 },
                 [Crepe.Feature.Placeholder]: {
@@ -87,7 +87,8 @@ export class MarkdownEditor {
                     slashMenuImageLabel: '图片',
                     slashMenuCodeBlockLabel: '代码块',
                     slashMenuTableLabel: '表格',
-                    slashMenuMathLabel: '数学公式'
+                    slashMenuMathLabel: '数学公式',
+                    slashMenuMermaidLabel: 'Mermaid图表'
                 },
                 [Crepe.Feature.ImageBlock]: {
                     blockCaptionPlaceholderText: '图片描述',
@@ -114,7 +115,12 @@ export class MarkdownEditor {
                             reader.readAsDataURL(file);
                         });
                     }
+                },
+                [Crepe.Feature.Mermaid]: {
+                    startOnLoad: false,
+                    //theme: 'dark'
                 }
+                
             }
         });
 
@@ -143,7 +149,7 @@ export class MarkdownEditor {
 
         crepe.editor.config((ctx) => {
             
-            ctx.set(mermaidConfigCtx.key, { /* some options */ });
+            // ctx.set(mermaidConfigCtx.key, { /* some options */ });
 
             ctx.update(uploadConfig.key, (prev) => ({
               ...prev,
@@ -168,7 +174,7 @@ export class MarkdownEditor {
         });
 
         crepe.editor.use(upload);
-        crepe.editor.use(diagram);
+        //crepe.editor.use(diagram);
 
         crepe.create().then(() => {
             this.inited = true;

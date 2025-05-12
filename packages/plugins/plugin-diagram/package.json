@@ -45,6 +45,7 @@
     "@milkdown/ctx": "workspace:*",
     "@milkdown/prose": "workspace:*",
     "@milkdown/transformer": "workspace:*",
+    "@milkdown/kit": "workspace:*",
     "mermaid": "^11.6.0",
     "nanoid": "^5.0.9",
     "tslib": "^2.8.1",
