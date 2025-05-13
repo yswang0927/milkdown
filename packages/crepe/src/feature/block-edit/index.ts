@@ -50,7 +50,7 @@ interface BlockEditConfig {
   slashMenuMathLabel: string
   // yswang
   slashMenuGraphIcon: Icon
-  slashMenuMermaidLabel: string
+  slashMenuGraphLabel: string
 }
 
 export type BlockEditFeatureConfig = Partial<BlockEditConfig>

@@ -88,7 +88,7 @@ export class MarkdownEditor {
                     slashMenuCodeBlockLabel: '代码块',
                     slashMenuTableLabel: '表格',
                     slashMenuMathLabel: '数学公式',
-                    slashMenuMermaidLabel: 'Mermaid图表'
+                    slashMenuGraphLabel: 'Mermaid图表'
                 },
                 [Crepe.Feature.ImageBlock]: {
                     blockCaptionPlaceholderText: '图片描述',

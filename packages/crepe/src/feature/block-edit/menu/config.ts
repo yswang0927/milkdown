@@ -297,7 +297,7 @@ export function getGroups(
   // yswang
   if (isMermaidEnabled) {
     advancedGroup.addItem('mermaid', {
-      label: config?.slashMenuMermaidLabel ?? 'Mermaid',
+      label: config?.slashMenuGraphLabel ?? 'Mermaid',
       icon: config?.slashMenuGraphIcon?.() ?? graphIcon,
       onRun: (ctx) => {
         const view = ctx.get(editorViewCtx)
@@ -305,6 +305,7 @@ export function getGroups(
 
         const command = clearContentAndAddBlockType(codeBlockSchema.type(ctx), {
           language: 'mermaid',
+          value: 'flowchart TD;\n A-->B;\n A-->C;\n B-->D;\n C-->D;',
         })
         command(state, dispatch)
       },
