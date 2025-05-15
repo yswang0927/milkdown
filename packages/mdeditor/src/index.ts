@@ -4,7 +4,6 @@ import 'core-js/actual';
 import { Crepe } from '@milkdown/crepe';
 import { editorViewCtx } from "@milkdown/core";
 import { outline, replaceAll, insert, getHTML } from '@milkdown/kit/utils';
-//import { html } from "@milkdown/kit/component";
 import { listenerCtx } from '@milkdown/kit/plugin/listener'
 
 import type { Uploader } from "@milkdown/kit/plugin/upload";
@@ -12,19 +11,28 @@ import { upload, uploadConfig } from "@milkdown/kit/plugin/upload";
 import { Decoration } from '@milkdown/prose/view';
 import type { Schema, Node } from '@milkdown/prose/model';
 
-//import { mermaidConfigCtx, diagram, blockMermaidSchema } from '@milkdown/plugin-diagram'
+import { aiPlugin, aiConfig } from '@milkdown/plugin-ai';
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
 import "./index.css";
 
 interface EditorOptions {
-    defaultValue?: string;
-    splitEditing?: boolean;
-    autofocus?: boolean;
-    onUpload?: (file: File) => Promise<string>;
-    onContentChanged?: (markdown: string, editor: MarkdownEditor) => void;
-    onReady?: (editor: MarkdownEditor) => void;
+    defaultValue?: string
+    splitEditing?: boolean
+    autofocus?: boolean
+    ai?: {
+        enabled: boolean
+        baseUrl: string
+        model: string
+        apiKey: string
+        temperature: number
+        maxTokens: number
+        topP: number
+    }
+    onUpload?: (file: File) => Promise<string>
+    onContentChanged?: (markdown: string, editor: MarkdownEditor) => void
+    onReady?: (editor: MarkdownEditor) => void
 }
 
 export class MarkdownEditor {
@@ -66,7 +74,7 @@ export class MarkdownEditor {
                     }
                 },
                 [Crepe.Feature.Placeholder]: {
-                    text: '输入 “/” 可快速插入内容',
+                    text: '输入 “/” 插入内容 或 "Command + /" 唤起AI助手',
                 },
                 [Crepe.Feature.BlockEdit]: {
                     slashMenuTextGroupLabel: '普通',
@@ -149,8 +157,6 @@ export class MarkdownEditor {
 
         crepe.editor.config((ctx) => {
             
-            // ctx.set(mermaidConfigCtx.key, { /* some options */ });
-
             ctx.update(uploadConfig.key, (prev) => ({
               ...prev,
               uploadWidgetFactory: (pos, spec) => {
@@ -160,6 +166,12 @@ export class MarkdownEditor {
                 return Decoration.widget(pos, widgetDOM, spec);
               },
               uploader: fileUploader,
+            }));
+
+            // 配置AI助手
+            ctx.update(aiConfig.key, (prev) => ({
+                ...prev,
+                ...this.options.ai
             }));
 
             // 监听事件
@@ -174,7 +186,7 @@ export class MarkdownEditor {
         });
 
         crepe.editor.use(upload);
-        //crepe.editor.use(diagram);
+        crepe.editor.use(aiPlugin);
 
         crepe.create().then(() => {
             this.inited = true;

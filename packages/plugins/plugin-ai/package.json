@@ -1,8 +1,12 @@
 {
-  "name": "@milkdown/mdeditor",
+  "name": "@milkdown/plugin-ai",
   "type": "module",
-  "version": "1.0.0",
+  "version": "7.10.3",
   "license": "MIT",
+  "keywords": [
+    "milkdown",
+    "milkdown plugin"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
@@ -20,22 +24,19 @@
       }
     }
   },
+  "scripts": {
+    "build": "vite build"
+  },
   "files": [
     "lib",
     "src"
   ],
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build"
-  },
   "dependencies": {
+    "@floating-ui/dom": "^1.5.1",
     "@milkdown/core": "workspace:*",
-    "@milkdown/crepe": "workspace:*",
-    "@milkdown/ctx": "workspace:*",
     "@milkdown/kit": "workspace:*",
-    "@milkdown/plugin-highlightmark": "workspace:*",
-    "@milkdown/plugin-ai": "workspace:*",
-    "@milkdown/prose": "workspace:*",
-    "core-js": "^3.40.0"
+    "@milkdown/utils": "workspace:*",
+    "openai": "^4.98.0",
+    "tslib": "^2.8.1"
   }
 }

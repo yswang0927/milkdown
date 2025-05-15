@@ -30,6 +30,7 @@ import type { ToolbarFeatureConfig } from '.'
 import { CrepeFeature } from '../..'
 import { FeaturesCtx } from '../../core/slice'
 import {
+  aiIcon,
   boldIcon,
   codeIcon,
   functionsIcon,
@@ -38,6 +39,9 @@ import {
   strikethroughIcon,
 } from '../../icons'
 import { mathInlineSchema } from '../latex/inline-latex'
+
+// yswang
+import { showAIHint, aiConfig, AIPromptsKey } from '@milkdown/plugin-ai'
 
 h
 Fragment
@@ -158,9 +162,30 @@ export const Toolbar = defineComponent<ToolbarProps>({
       )
     }
 
+    // yswang
+    const aiConfigs = ctx?.get(aiConfig.key) || {};
+    const isAIEnabled = !!aiConfigs.enabled;
+    const callAI = (ctx: Ctx) => {
+      showAIHint(ctx);
+      hide?.();
+    };
+
     return () => {
       return (
         <>
+        {isAIEnabled && (
+          <>
+            <button
+              type="button"
+              class={clsx('toolbar-item', 'ai-button')}
+              onClick={onClick((ctx) => callAI(ctx))}
+            >
+              <Icon icon={aiIcon} />
+              <span class="toolbar-item-text">AI助手</span>
+            </button>
+            <div class="divider"></div>
+            </>
+          )}
           <button
             type="button"
             class={clsx(

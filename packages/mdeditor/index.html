@@ -84,7 +84,7 @@
         }
 
 
-        const mdContent = '以[《红楼梦》] 为主题写一篇[图书解读] ，目的是[读书分享]，以 [作者] 的视角，要求 [文字通俗易懂，具体清晰，善用恰当的举例子或类比] ，重点突出 [解释分析《红楼梦》的影响] 。';
+        let mdContent = '以[《红楼梦》] 为主题写一篇[图书解读] ，目的是[读书分享]，以 [作者] 的视角，要求 [文字通俗易懂，具体清晰，善用恰当的举例子或类比] ，重点突出 [解释分析《红楼梦》的影响] 。';
 
 
 const markdown = `
@@ -103,10 +103,17 @@ flowchart TD
 `;
 
         //console.log(mdContent);
+        //mdContent = 'Hotel California';
 
         const editor = window.$mdEditor = new MarkdownEditor('#editor', {
-            defaultValue: markdown,
+            defaultValue: mdContent,
             splitEditing: true,
+            ai: {
+                enabled: true,
+                baseUrl: 'http://localhost:11434/v1',
+                model: 'qwen2.5:latest', //'deepseek-r1:7b',
+                apiKey: '',
+            },
             onReady: () => {
                 updateToc(editor.getToc());
             },
