@@ -31,6 +31,7 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
 
       mermaid.initialize({
         startOnLoad: false,
+        suppressErrorRendering: true,
         ...config
       })
 
@@ -60,7 +61,7 @@ function renderMermaid(content: string, config?: MermaidConfig) {
     try {
       mermaid.parseError = (err) => {
         const ele = document.querySelector('#'+ divId);
-        ele && (ele.innerHTML = `<span style='color:red;'>Mermaid语法错误: ${err}</span>`);
+        ele && (ele.innerHTML = `<div style='color:red;'><div>Mermaid语法错误: </div><div>${err}</div></div>`);
       };
       
       mermaid.render('graph_'+ divId, content).then((output: any) => {
