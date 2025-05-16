@@ -16,5 +16,12 @@ export default defineConfig({
                 inlineDynamicImports: true,
             }
         }
+    },
+    define: {
+        __VUE_OPTIONS_API__: true,
+        __VUE_PROD_DEVTOOLS__: false,
+        __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
+        // 添加这一行，替换 process.env.NODE_ENV
+        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
     }
 });

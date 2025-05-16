@@ -34,6 +34,8 @@ async function fetchAIHint(ctx: Ctx, prompt: string) {
     return;
   }
 
+  let signalAbort = window.fetchAiSignalAbort = new AbortController();
+
   const { state } = view;
   const tr = state.tr;
   // 显示AI思考中的提示信息
@@ -60,7 +62,8 @@ async function fetchAIHint(ctx: Ctx, prompt: string) {
   const payload: any = {
     model: aiConfigs.model,
     messages: [{ role: "user", content: prompt }],
-    stream: true
+    stream: true,
+    signal: signalAbort
   };
 
   if (aiConfigs.temperature && aiConfigs.temperature > 0) {
@@ -80,14 +83,36 @@ async function fetchAIHint(ctx: Ctx, prompt: string) {
 
     // 响应流式输出
     for await (const chunk of newStream) {
-      const delta = chunk.choices[0]?.delta;
-      if (delta?.reasoning_content || delta?.reasoning) {
-        hasReasoningContent = true;
+      if (window.stopStreamOutput) {
+        window.stopStreamOutput = false;
+        break;
       }
 
-      let content = delta?.content || '';
-      if (content) {
+      const delta = chunk.choices[0]?.delta;
+
+      let reasoning_content = delta?.reasoning_content || delta?.reasoning;
+
+      // 碰到vllm部署模型的思考输出
+      if (reasoning_content !== undefined) {
+        // 第一次进入思考内容, 增加头
+        if (!hasReasoningContent) {
+          hasReasoningContent = true;
+          accumulatedText = '<think>';
+        }
+        accumulatedText += reasoning_content;
+      }
+      // 思考结束了
+      else {
+        if (hasReasoningContent) {
+          hasReasoningContent = false;
+          accumulatedText += '</think>';
+        }
+
+        let content = delta?.content || '';
         accumulatedText += content;
+      }
+      
+      if (accumulatedText) {
         throttledUpdate({ 
           content: accumulatedText, 
           writing: true,
@@ -216,7 +241,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
             </div>
           </div>
           <div class="actions-right">
-            <button class="copilot-btn-stop hide" data-ref="btn_stop">
+            <button class="copilot-btn-stop" data-ref="btn_stop">
               <span class="copilot-btn-icon"><svg width="1em" height="1em" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M512 968a456 456 0 1 1 395.76-229.36 32 32 0 0 1-55.52-32A392 392 0 1 0 706.8 852.08a32 32 0 0 1 32 55.52A456 456 0 0 1 512 968z"/><path d="M576 672H448a96 96 0 0 1-96-96V448a96 96 0 0 1 96-96h128a96 96 0 0 1 96 96v128a96 96 0 0 1-96 96zM448 416a32 32 0 0 0-32 32v128a32 32 0 0 0 32 32h128a32 32 0 0 0 32-32V448a32 32 0 0 0-32-32H448z"/></svg></span>
               <span class="copilot-btn-text">停止输出</span>
             </button>
@@ -297,10 +322,10 @@ const copilotPlugin = $prose((ctx: Ctx) => {
 
       cachedDomRefs = {};
       const cdoms = copilotDiv.getElementsByTagName("*");
-      for (let i = 0; i < cdoms.length; i++) {
-        const ref = cdoms[i]?.getAttribute("data-ref");
+      for (let ele of cdoms) {
+        const ref = ele.getAttribute("data-ref");
         if (ref) {
-          cachedDomRefs[ref] = cdoms[i];
+          cachedDomRefs[ref] = ele;
         }
       }
 
@@ -330,8 +355,11 @@ const copilotPlugin = $prose((ctx: Ctx) => {
       cachedDomRefs['btn_insert']?.addEventListener("click", () => {
         applyHint(ctx, true);
       });
-      cachedDomRefs['btn_rehint']?.addEventListener("click", () => {
-        //showAIHint(ctx);
+      cachedDomRefs['btn_stop']?.addEventListener("click", () => {
+        window.stopStreamOutput = true;
+        if (window.fetchAiSignalAbort) {
+          window.fetchAiSignalAbort.abort();
+        }
       });
 
       const textarea = cachedDomRefs['promptInput'];
@@ -408,14 +436,18 @@ const copilotPlugin = $prose((ctx: Ctx) => {
       };
 
       const menuItems = cachedDomRefs['dropdown'].querySelectorAll('div.dropdown-menu-item');
-      for (let i = 0; i < menuItems.length; i++) {
-        menuItems[i]?.addEventListener('click', (e: MouseEvent) => {
-          const action = e.currentTarget?.getAttribute('data-action');
-          if (action) {
+      for (let item of menuItems) {
+        item.addEventListener('click', (e: MouseEvent) => {
+          const ele = e.currentTarget as HTMLElement || null;
+          if (!ele) {
+            return;
+          }
+          const action = ele.getAttribute('data-action');
+          if (action !== null) {
             let parts = action.split(':');
             if (parts.length == 2) {
               let func = menuFunctions[parts[0]];
-              func && func(parts[1]);
+              (typeof func === 'function') && func(parts[1]);
             }
           }
         });

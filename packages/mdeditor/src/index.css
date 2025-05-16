@@ -17,15 +17,12 @@
     --crepe-color-selected: #e1e2e8;
     --crepe-color-inline-area: #d8dae0;
 
-    --crepe-font-title: Rubik, Cambria, 'Times New Roman', Times, serif;
-    --crepe-font-default: Inter, Arial, Helvetica, sans-serif;
-    --crepe-font-code:
-        'JetBrains Mono', Menlo, Monaco, 'Courier New', Courier, monospace;
+    --crepe-font-title: Rubik, Cambria, 'Times New Roman', Times, serif, "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji";
+    --crepe-font-default: Arial, Helvetica, sans-serif, "Apple Color Emoji","Segoe UI Emoji";
+    --crepe-font-code: 'JetBrains Mono', Menlo, Monaco, 'Courier New', Courier, monospace, "Apple Color Emoji", "Noto Color Emoji", "Segoe UI Emoji";
 
-    --crepe-shadow-1:
-        0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
-    --crepe-shadow-2:
-        0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    --crepe-shadow-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+    --crepe-shadow-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
 }
 
 html {
