@@ -13,8 +13,11 @@ import type { Schema, Node } from '@milkdown/prose/model';
 
 import { aiPlugin, aiConfig } from '@milkdown/plugin-ai';
 
+
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
+import "@milkdown/plugin-ai/style.css"
+
 import "./index.css";
 
 interface EditorOptions {
@@ -63,6 +66,7 @@ export class MarkdownEditor {
       return URL.createObjectURL(file)
     };
 
+    const isEditable = this.options.editable !== undefined ? this.options.editable : true;
     const aiEnabled = this.options.ai && this.options.ai.enabled && this.options.ai.baseUrl;
 
     const crepe = this.crepe = new Crepe({
@@ -140,8 +144,6 @@ export class MarkdownEditor {
       }
     });
 
-    crepe.setReadonly(!this.options.editable);
-
     const fileUploader: Uploader = async (files, schema: Schema) => {
       const nodes: Node[] = await Promise.all(
         Array.from(files).map(async (file) => {
@@ -207,9 +209,14 @@ export class MarkdownEditor {
     crepe.create().then(() => {
       this.inited = true;
 
-      if (this.options.autofocus) {
+      if (!isEditable) {
+        crepe.setReadonly(true);
+      }
+      
+      if (isEditable && this.options.autofocus) {
         crepe.editor.ctx.get(editorViewCtx).dom.focus();
       }
+
       if (typeof this.options.onReady === 'function') {
         this.options.onReady(this);
       }

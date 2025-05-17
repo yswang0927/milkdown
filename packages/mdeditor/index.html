@@ -87,7 +87,7 @@
         let mdContent = '以[《红楼梦》] 为主题写一篇[图书解读] ，目的是[读书分享]，以 [作者] 的视角，要求 [文字通俗易懂，具体清晰，善用恰当的举例子或类比] ，重点突出 [解释分析《红楼梦》的影响] 。';
 
 
-const markdown = `
+let mdContent2 = `
 # Hotel California
 
 On a dark desert **highway**, cool wind in my hair.
@@ -107,11 +107,11 @@ flowchart TD
 
         const editor = window.$mdEditor = new MarkdownEditor('#editor', {
             defaultValue: mdContent,
-            splitEditing: true,
+            editable: true,
             ai: {
                 enabled: true,
                 baseUrl: 'http://localhost:11434/v1',
-                model: 'deepseek-r1:7b',
+                model: 'qwen2.5:latest',
                 apiKey: '',
             },
             onReady: () => {

@@ -41,7 +41,7 @@ import {
 import { mathInlineSchema } from '../latex/inline-latex'
 
 // yswang
-import { showAIHint, aiConfig, AIPromptsKey } from '@milkdown/plugin-ai'
+import { showAIHint, aiConfig } from '@milkdown/plugin-ai'
 
 h
 Fragment

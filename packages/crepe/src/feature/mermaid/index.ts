@@ -39,7 +39,7 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
         ...prev,
         renderPreview: (language, content) => {
           if (language.toLowerCase() === 'mermaid' && content.length > 0) {
-            return renderMermaid(content, config);
+            return renderMermaid(content);
           }
           const renderPreview0 = prev.renderPreview;
           return renderPreview0 ? renderPreview0(language, content) : null;
@@ -52,7 +52,7 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
     .use(blockMermaidSchema)
 }
 
-function renderMermaid(content: string, config?: MermaidConfig) {
+function renderMermaid(content: string) {
   const graphId = 'mermaid'+ Date.now();
   let dom = document.createElement('div');
   dom.className = 'milkdown-mermaid-preview-panel';
