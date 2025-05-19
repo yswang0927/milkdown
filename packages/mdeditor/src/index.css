@@ -163,7 +163,7 @@ body {
 .milkdown .milkdown-toolbar {
     display: flex;
     align-items: center;
-    padding: 4px;
+    padding: 6px;
     gap: 4px;
 }
 .milkdown .milkdown-toolbar button {
@@ -172,8 +172,8 @@ body {
     justify-content: center;
 }
 .milkdown .milkdown-toolbar .toolbar-item {
-    min-width: 30px;
-    min-height: 30px;
+    min-width: 28px;
+    min-height: 28px;
     margin: 0;
 }
 .milkdown .milkdown-toolbar .divider {
@@ -196,6 +196,8 @@ body {
     height: 1.2em;
 }
 .milkdown .milkdown-toolbar .ai-button .toolbar-item-text {
+    display: inline-block;
+    padding-right: 5px;
     background: linear-gradient(320deg, #b14eed 6%, #1e64ff 61%, #37c5ff 100%);
     -webkit-background-clip: text;
     background-clip: text;

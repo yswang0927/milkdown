@@ -38,23 +38,45 @@
         div {
             scrollbar-width: thin;
         }
+        .page-part-left,
+        .page-part-right {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .page-part-left {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .page-part-right {
+            z-index: 2;
+        }
+
         .page-a4 {
             position: relative;
             z-index: 1;
             width: 210mm;
             min-height: 297mm; 
             padding: 20mm;
-            margin: 0 auto;
-            border: 1px solid #ccc;
+            box-shadow: rgba(13, 13, 13, 0.14) 0px 1px 4px;
+            border: 1px solid rgb(216, 216, 216);
             background-color: #fff;
             box-sizing: border-box;
         }
         #toc {
             height: 100%;
-            width: 200px;
+            width: 240px;
             padding: 10px;
             overflow: auto;
             color: rgba(0, 0, 0, .64);
+        }
+        #toc_list .empty-tip {
+            color: #767c85;
         }
         #toc_list > a {
             display: block;
@@ -71,32 +93,65 @@
 </head>
 
 <body>
-    <div style="position:absolute; left:0;top:0;right:0;bottom:0; display:flex;">
-        <div id="toc">
-            <h3>大纲</h3>
-            <div id="toc_list"></div>
+    <div style="position:absolute; left:0;top:0;right:0;bottom:0;">
+        <div class="page-part-left">
+            <div id="toc">
+                <h3>大纲</h3>
+                <div id="toc_list">
+                    <div class="empty-tip">设置的标题会在此处显示</div>
+                </div>
+            </div>
         </div>
 
-        <div style="flex:1 1; padding: 20px 0 50px 0; overflow-y: auto;">
-            <div id="editor" class="page-a4"></div>
+        <div class="page-part-right">
+            <div style="height:100%; padding: 20px 0 50px 0; overflow: auto;">
+                <div id="editor" class="page-a4"></div>
+            </div>
         </div>
+
     </div>
+    
+    <script>
+    (function(){
+        const pagePartLeftDiv = document.querySelector('.page-part-left');
+        const pagePartRightDiv = document.querySelector('.page-part-right');
+        const tocDiv = document.querySelector('#toc');
+        const editorDiv = document.querySelector('#editor');
+        const editorLeftSpace = 10;
+        editorDiv.style.marginLeft = editorLeftSpace + 'px';
+        const updateLayout = () => {
+            const bw = document.body.clientWidth;
+            const ew = editorDiv.offsetWidth + editorLeftSpace;
+            const partLeftW = Math.max(tocDiv.clientWidth, (bw/2 - ew/2));
+            pagePartLeftDiv.style.width = partLeftW + 'px';
+            pagePartRightDiv.style.left = partLeftW + 'px';
+            pagePartRightDiv.style.width = Math.max(ew, (bw - partLeftW)) + 'px';
+        };
+        updateLayout();
+        window.addEventListener('resize', () => {
+            updateLayout();
+        });
+    })();
+    </script>
 
     <script type="module">
         import { MarkdownEditor } from './src/index.ts';
 
         function updateToc(tocs) {
             const toc = document.getElementById('toc_list');
-            toc.innerHTML = '';
-            tocs.forEach((item) => {
-                console.log(item);
-                const a = document.createElement('a');
-                a.href = `#${item.id}`;
-                a.dataset.level = item.level;
-                a.style.marginLeft = `${(item.level-1) * 16}px`;
-                a.innerText = item.text;
-                toc.appendChild(a);
-            });
+            toc.innerHTML = '<div class="empty-tip">设置的标题会在此处显示</div>';
+            if (tocs.length > 0) {
+                toc.innerHTML = '';
+                tocs.forEach((item) => {
+                    console.log(item);
+                    const a = document.createElement('a');
+                    a.href = `#${item.id}`;
+                    a.dataset.level = item.level;
+                    a.style.marginLeft = `${(item.level-1) * 16}px`;
+                    a.innerText = item.text;
+                    toc.appendChild(a);
+                });
+            }
         }
 
 
