@@ -6,6 +6,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown编辑器</title>
     <style>
+        html {
+            font-size: 85px;
+        }
+        /* 5K+ */
+        @media only screen and (orientation: landscape) and (min-device-width: 5001px) {
+            html {
+                font-size: 160px !important;
+            }
+        }
+        @media only screen and (orientation: portrait) and (min-device-height: 5001px) {
+            html {
+                font-size: 160px !important;
+            }
+        }
+        /* 4K */
+        @media only screen and (orientation: landscape) and (max-device-width: 5000px) and (min-device-width: 3001px) {
+            html {
+                font-size: 140px !important;
+            }
+        }
+        @media only screen and (orientation: portrait) and (max-device-height: 5000px) and (min-device-height: 3001px) {
+            html {
+                font-size: 140px !important;
+            }
+        }
+        /* 2K */
+        @media only screen and (orientation: landscape) and (max-device-width: 3000px) and (min-device-width: 2001px) {
+            html {
+                font-size: 100px !important;
+            }
+        }
+        @media only screen and (orientation: portrait) and (max-device-height: 3000px) and (min-device-height: 2001px) {
+            html {
+                font-size: 100px !important;
+            }
+        }
+        /* 1K */
+        @media only screen and (orientation: landscape) and (max-device-width: 2000px) {
+            html {
+                font-size: 85px !important;
+            }
+        }
+        @media only screen and (orientation: portrait) and (max-device-height: 2000px) {
+            html {
+                font-size: 85px !important;
+            }
+        }
+        
         :root {
             --bg-color: #f3f5f7;
         }
@@ -26,6 +74,7 @@
 
         body {
             font-family: "Helvetica Neue","Helvetica","Arial",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol";
+            font-size: 14px;
             line-height: 1.4;
             background-color: var(--bg-color);
             will-change: transform;
@@ -62,12 +111,13 @@
             z-index: 1;
             width: 210mm;
             min-height: 297mm; 
-            padding: 20mm;
+            padding: 20mm 22mm;
             box-shadow: rgba(13, 13, 13, 0.14) 0px 1px 4px;
             border: 1px solid rgb(216, 216, 216);
             background-color: #fff;
             box-sizing: border-box;
         }
+        
         #toc {
             height: 100%;
             width: 240px;
@@ -182,7 +232,7 @@ flowchart TD
             ai: {
                 enabled: true,
                 baseUrl: 'http://localhost:11434/v1',
-                model: 'deepseek-r1:7b',
+                model: 'qwen3:1.7b', //'deepseek-r1:7b',
                 apiKey: '',
             },
             onReady: () => {

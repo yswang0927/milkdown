@@ -24,16 +24,14 @@ import {
   arrowRightIcon,
   chevronRight,
   discardIcon,
-  loadingIcon,
   insertIcon,
   refreshIcon,
   sendIcon,
   stopIcon,
   translationIcon,
+  warnIcon,
   writerIcon1,
-  writerIcon2,
   writerIcon3,
-  writerIcon4,
   writerIcon5,
 } from './icons'
 
@@ -47,6 +45,15 @@ type CopilotViewProps = {
   contextBefore: string
   apply: (ctx: Ctx, content: string, insert: boolean) => void
   hide: (ctx: Ctx) => void
+}
+
+// 0-初始状态,1-等待响应,2-正在输出,3-输出完成,9-响应失败
+enum CopilotStatus {
+  INIT = 0,
+  PENDING = 1,
+  OUTPUTING = 2,
+  FINISHED = 3,
+  ERROR = 9
 }
 
 export const CopilotView = defineComponent<CopilotViewProps>({
@@ -94,8 +101,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const thinkingEndRef = ref<boolean>(false)
     const thinkingContentDivRef = ref<HTMLElement>()
 
-    // 0-初始状态,1-等待响应,2-正在输出,3-输出完成,9-响应失败
-    const aiStatusRef = ref<number>(0)
+    const copilotStatusRef = ref<CopilotStatus>(CopilotStatus.INIT)
 
     const openAIClient = new OpenAI({
       apiKey: aiConfigs.apiKey,
@@ -104,7 +110,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     });
 
     async function fetchAIHint(prompt: string) {
-      aiStatusRef.value = 1;
+      copilotStatusRef.value = CopilotStatus.PENDING;
       hasThinkingRef.value = false;
       thinkingEndRef.value = false;
       thinkingFoldedRef.value = false;
@@ -122,11 +128,11 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       const throttledUpdate = (thinkingText: string, mainText: string, immediate: boolean = false) => {
         const now = Date.now();
         if ((now - lastUpdateTime >= THROTTLE_INTERVAL) || immediate) {
-          if (thinkingText) {
+          if (thinkingText && thinkingText.length > 0) {
             renderThinking(thinkingText);
           }
 
-          if (mainText) {
+          if (mainText && mainText.length > 0) {
             renderMainContent(mainText);
           }
 
@@ -160,7 +166,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     
         // 响应流式输出
         for await (const chunk of newStream) {
-          aiStatusRef.value = 2;
+          copilotStatusRef.value = CopilotStatus.OUTPUTING;
           if (stoppingOutputRef.value) {
             break;
           }
@@ -169,16 +175,22 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     
           let reasoningContent = delta?.reasoning_content || delta?.reasoning;
           let content = delta?.content || '';
-          if (!reasoningContent && !content) {
+
+          if (!hasReasoning && reasoningContent !== undefined) {
+            hasReasoning = true;
+          }
+
+          if (!hasReasoning && !content) {
             continue;
           }
     
           // 碰到思考输出
+          // 处理 vllm 输出的 reasoning_content
           // 处理 <think> 标签
-          if (content.includes('<think>')) {
+          if (hasReasoning || content.includes('<think>')) {
             hasThinkingRef.value = true;
             inThinking = true;
-            content = content.replace('<think>', '');
+            content = (reasoningContent || content).replace('<think>', '');
           }
           if (content.includes('</think>')) {
             content = content.replace('</think>', '');
@@ -187,7 +199,13 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             thinkingFoldedRef.value = true;
           }
 
-          // 如果在思考块内，为每个新行添加 > 前缀
+          if (hasReasoning && inThinking && delta?.content) {
+            inThinking = false;
+            thinkingEndRef.value = true;
+            thinkingFoldedRef.value = true;
+          }
+
+          // 如果在思考块内
           if (inThinking) {
             if (content.length === 0) {
               continue;
@@ -206,26 +224,6 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           if (!inThinking) {
             mainText += content;
           }
-
-          /*if (reasoningContent !== undefined || content.contains('<think>')) {
-            // 第一次进入思考内容
-            if (!hasReasoning) {
-              hasReasoning = true;
-              hasThinkingRef.value = true;
-            }
-            reasoningText += reasoningContent;
-            //accumulatedText += reasoningContent;
-          }
-          // 思考结束了
-          else {
-            if (hasReasoning) {
-              hasReasoning = false;
-              accumulatedText += '</think>';
-            }
-    
-            mainText += content;
-            accumulatedText += content;
-          }*/
           
           if (mainText) {
             throttledUpdate('', mainText, false);
@@ -233,7 +231,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         }
     
       } catch (error) {
-        aiStatusRef.value = 9;
+        copilotStatusRef.value = CopilotStatus.ERROR;
         console.error(">> Error: AI chat completion error:", error);
         return;
       }
@@ -241,7 +239,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       // 确保最后一次更新一定会执行
       throttledUpdate('', mainText, true);
       mainContentRef.value = mainText;
-      aiStatusRef.value = 3;
+      copilotStatusRef.value = CopilotStatus.FINISHED;
     }
 
     const foldThinking = () => {
@@ -322,8 +320,8 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     }
 
     const sendUserInputPrompt = () => {
-      if (promptInputRef.value) {
-        const textarea = promptInputRef.value;
+      const textarea = promptInputRef.value;
+      if (textarea) {
         let inputValue = textarea.value.trim();
         if (inputValue) {
           if (inputValue.includes('前面的内容')
@@ -339,6 +337,8 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           }
           
           fetchAIHint(inputValue);
+          textarea.value = '';
+          textarea.style.height = 'auto';
         } else {
           textarea.focus();
         }
@@ -429,9 +429,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
 
         textarea.addEventListener('keydown', (e: KeyboardEvent) => {
           if (e.key === 'Enter' && e.ctrlKey) {
-            let value = textarea.value.trim();
-            textarea.value = '';
-            value && fetchAIHint(value);
+            sendUserInputPrompt();
           }
         }, false);
 
@@ -452,12 +450,18 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       return (
         <div class="milkdown-copilot-viewpanel" ref={copilotViewDivRef}>
           <div class="milkdown-copilot-wrap">
-            {aiStatusRef.value === 1 && (
+            {copilotStatusRef.value === CopilotStatus.PENDING && (
               <div class="milkdown-copilot-loading">
                 <div class="copilot-loading-icon1">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="25 25 50 50"><circle r="20" cy="50" cx="50"></circle></svg>
                 </div>
                 <div class="copilot-loading-icon2"><Icon icon={aiIcon}/></div>
+              </div>
+            )}
+            {copilotStatusRef.value === CopilotStatus.ERROR && (
+              <div class="milkdown-copilot-error">
+                <Icon icon={warnIcon}/>
+                <span>AI服务异常,请稍后重试</span>
               </div>
             )}
             <div tabindex="-1" class={clsx(
@@ -475,16 +479,16 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             </div>
             <div tabindex="-1" class={clsx(
               'milkdown-copilot-content',
-              (thinkingEndRef.value && (aiStatusRef.value === 2 || aiStatusRef.value === 3))?'shown':''
+              (thinkingEndRef.value && (copilotStatusRef.value === CopilotStatus.OUTPUTING || copilotStatusRef.value === CopilotStatus.FINISHED))?'shown':''
             )} ref={mainContentDivRef}></div>
             <div class={clsx(
               "milkdown-copilot-actions",
-              (aiStatusRef.value === 2)?'shown':''
+              (copilotStatusRef.value === CopilotStatus.OUTPUTING)?'shown':''
             )}>
               <div class="actions-left">
                 <div class="ai-loading-tip">
                   <span class="ai-loading-icon"><Icon icon={aiIcon}/></span>
-                  <span class="ai-loading-text">AI撰写中...</span>
+                  <span class="ai-loading-text">AI生成中...</span>
                 </div>
               </div>
               <div class="actions-right">
@@ -495,7 +499,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             </div>
             <div class={clsx(
               "milkdown-copilot-actions",
-              (aiStatusRef.value === 3)?'shown':''
+              (copilotStatusRef.value === CopilotStatus.FINISHED)?'shown':''
             )}>
               <div class="actions-left">
                 <button class="copilot-btn-accept" onClick={onClick(applyReplace)}>
@@ -520,7 +524,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             </div>
             <div class={clsx(
               'milkdown-copilot-input-panel',
-              (aiStatusRef.value === 0 || aiStatusRef.value === 3)?'shown':''
+              (copilotStatusRef.value === CopilotStatus.INIT || copilotStatusRef.value === CopilotStatus.FINISHED)?'shown':''
             )}>
               <div class="milkdown-copilot-input-wrap" ref={promptInputWrapRef}>
                 <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
@@ -528,12 +532,12 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                   <textarea rows="1" cols="20" placeholder="想让我做什么呢?" ref={promptInputRef}></textarea>
                 </div>
                 <div class="copilot-input-actions">
-                  <button class="copilot-input-send-btn" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>
+                  <button class="copilot-input-send-btn" title="发送(Ctrl+Enter)" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>
                 </div>
               </div>
               <div class={clsx(
                 'milkdown-copilot-dropdown',
-                (aiStatusRef.value === 0)?'shown':''
+                (copilotStatusRef.value === CopilotStatus.INIT)?'shown':''
               )} ref={dropdownMenuRef}>
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
