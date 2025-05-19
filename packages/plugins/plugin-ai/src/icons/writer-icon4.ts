@@ -1,0 +1,3 @@
+export const writerIcon4 = `
+<svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M22.131 5.066V3.415H1v1.651h21.131zm-7.924 7.759v-1.651H1v1.651h13.207zm-2.642 6.108v1.651H1v-1.651h10.565zm10.268-4.653L23 15.448l-3.969 3.968-1.167 1.168-1.168-1.168-2.567-2.567 1.167-1.167 2.568 2.567 3.969-3.969z"/></svg>
+`

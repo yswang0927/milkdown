@@ -7,7 +7,7 @@
     <title>Markdown编辑器</title>
     <style>
         :root {
-            --bg-color: #f5f5f5;
+            --bg-color: #f3f5f7;
         }
 
         *,
@@ -25,7 +25,7 @@
         }
 
         body {
-            font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol","Helvetica Neue","Helvetica","Arial",sans-serif;
+            font-family: "Helvetica Neue","Helvetica","Arial",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol";
             line-height: 1.4;
             background-color: var(--bg-color);
             will-change: transform;
@@ -38,35 +38,49 @@
         div {
             scrollbar-width: thin;
         }
+        .page-a4 {
+            position: relative;
+            z-index: 1;
+            width: 210mm;
+            min-height: 297mm; 
+            padding: 20mm;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-sizing: border-box;
+        }
         #toc {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 200px;
             height: 100%;
-            overflow: auto;
+            width: 200px;
             padding: 10px;
-            background-color: #f5f5f5;
-            border-right: 1px solid #ccc;
+            overflow: auto;
+            color: rgba(0, 0, 0, .64);
         }
         #toc_list > a {
             display: block;
             padding: 5px 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+        #toc_list > a:hover {
+            background-color: rgba(51,77,102,.06);
+            border-radius: 3px;
         }
     </style>
 
 </head>
 
 <body>
-    <div id="toc">
-        <h2>目录</h2>
-        <div id="toc_list"></div>
-    </div>
+    <div style="position:absolute; left:0;top:0;right:0;bottom:0; display:flex;">
+        <div id="toc">
+            <h3>大纲</h3>
+            <div id="toc_list"></div>
+        </div>
 
-    <div style="padding: 30px 0 100px 0;">
-        <div id="editor" style="max-width:210mm;min-height:160mm; margin:0 auto;border:1px solid #ccc;background-color: #fff;"></div>
+        <div style="flex:1 1; padding: 20px 0 50px 0; overflow-y: auto;">
+            <div id="editor" class="page-a4"></div>
+        </div>
     </div>
-
 
     <script type="module">
         import { MarkdownEditor } from './src/index.ts';
@@ -75,9 +89,11 @@
             const toc = document.getElementById('toc_list');
             toc.innerHTML = '';
             tocs.forEach((item) => {
+                console.log(item);
                 const a = document.createElement('a');
-                a.style.marginLeft = `${(item.level-1) * 10}px`;
                 a.href = `#${item.id}`;
+                a.dataset.level = item.level;
+                a.style.marginLeft = `${(item.level-1) * 16}px`;
                 a.innerText = item.text;
                 toc.appendChild(a);
             });
@@ -111,7 +127,7 @@ flowchart TD
             ai: {
                 enabled: true,
                 baseUrl: 'http://localhost:11434/v1',
-                model: 'qwen2.5:latest',
+                model: 'deepseek-r1:7b',
                 apiKey: '',
             },
             onReady: () => {

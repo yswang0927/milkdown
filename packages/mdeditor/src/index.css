@@ -31,25 +31,23 @@ html {
 
 body {
     font-size: 0.875rem;
+    font-family: "Helvetica Neue","Helvetica","Arial",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Segoe UI Symbol";
 }
 
 .milkdown {
     background-color: transparent;
 }
+.milkdown .ProseMirror {
+    padding: 0;
+}
 
 .milkdown .ProseMirror p {
-    font-size: 0.875rem;
+    font-size: 1em;
     line-height: 1.8;
 }
 
-.milkdown p.crepe-placeholder,
-.milkdown p.crepe-placeholder::before {
-    font-size: 0.8rem;
-}
-
-.milkdown .ProseMirror {
-    /*padding: 30px 80px;*/
-    padding: 16mm 20mm;
+.milkdown .crepe-placeholder::before {
+    font-size: 14px;
 }
 
 .milkdown-drop-uploading-tip {
@@ -70,31 +68,29 @@ body {
 }
 
 
-.milkdown milkdown-link-edit>.link-edit {
+.milkdown .milkdown-link-edit>.link-edit {
     border-radius: 6px;
     align-items: center;
 }
 
-.milkdown milkdown-latex-inline-edit {
+.milkdown .milkdown-latex-inline-edit {
     border-radius: 6px;
     align-items: center;
     padding-top: 6px;
     padding-bottom: 6px;
 }
 
-
-.milkdown milkdown-block-handle .operation-item svg {
-    width: 20px;
-    height: 20px;
-}
-
-.milkdown milkdown-block-handle .operation-item {
+.milkdown .milkdown-block-handle .operation-item {
     width: 26px;
     height: 26px;
     line-height: 1.0;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.milkdown .milkdown-block-handle .operation-item svg {
+    width: 20px;
+    height: 20px;
 }
 
 .milkdown .ProseMirror blockquote {
@@ -114,15 +110,16 @@ body {
 }
 
 
-.milkdown milkdown-image-inline .empty-image-inline {
+.milkdown .milkdown-image-inline .empty-image-inline {
     border-radius: 4px;
 }
 
-.milkdown milkdown-code-block {
+.milkdown .milkdown-code-block {
+    padding: 10px;
     border-radius: 5px;
 }
 
-.milkdown milkdown-code-block .tools .language-button {
+.milkdown .milkdown-code-block .tools .language-button {
     opacity: 1 !important;
 }
 

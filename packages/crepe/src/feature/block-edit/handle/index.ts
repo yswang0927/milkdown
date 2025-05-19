@@ -35,7 +35,7 @@ export class BlockHandleView implements PluginView {
     this.#provider = new BlockProvider({
       ctx,
       content,
-      getOffset: () => 16,
+      getOffset: () => 8,
       getPlacement: ({ active, blockDom }) => {
         if (active.node.type.name === 'heading') return 'left'
 

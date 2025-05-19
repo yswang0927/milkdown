@@ -18,6 +18,7 @@ export enum AIPromptsKey {
   Translation = 'translation',
   ArticlePolishing = 'article:polishing',
   ArticleExpansion = 'article:expansion',
+  ArticleContinue = 'article:continue',
   ArticleSummarize = 'article:summarize'
 };
 
@@ -44,6 +45,12 @@ const defaultPrompts = {
                         +'\n2. 文章应该吸引目标读者群，使用适当的语言和风格。'
                         +'\n3. 引入相关案例或数据支持论点，增强文章的说服力。'
                         +'\n4. 结构清晰，逻辑连贯，确保读者易于理解和跟随。'
+  ,'article_continue': '你对一篇未完成的文章进行续写，完成文章的剩余部分。'
+                        +'\n原文内容：{{content}}'
+                        +'\n\n要求：'
+                        +'\n1.阅读并理解原文的内容和风格。'
+                        +'\n2.确定续写的方向，确保与原文内容的连贯性。'
+                        +'\n3.在保持原文风格的基础上，创造性地完成文章。'
   ,'article_summarize': '请根据以下要求撰写内容概括：'
                         +'\n\n原文内容：{{content}}'
                         +'\n\n要求：'
@@ -64,6 +71,7 @@ export const defaultAIConfig: AIConfig = {
     [AIPromptsKey.Translation]: defaultPrompts['translation'],
     [AIPromptsKey.ArticlePolishing]: defaultPrompts['article_polishing'],
     [AIPromptsKey.ArticleExpansion]: defaultPrompts['article_expansion'],
+    [AIPromptsKey.ArticleContinue]: defaultPrompts['article_continue'],
     [AIPromptsKey.ArticleSummarize]: defaultPrompts['article_summarize'],
   }
 };

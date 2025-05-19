@@ -181,7 +181,7 @@ export const Toolbar = defineComponent<ToolbarProps>({
               onClick={onClick((ctx) => callAI(ctx))}
             >
               <Icon icon={aiIcon} />
-              <span class="toolbar-item-text">AI助手</span>
+              <span class="toolbar-item-text">AI</span>
             </button>
             <div class="divider"></div>
             </>

@@ -20,14 +20,18 @@ export function showAIHint(ctx: Ctx) {
   const slice = (from === to) ? tr.doc.slice(0, from) : tr.doc.slice(from, to);
   const doc = state.schema.topNodeType.create(null, slice.content);
   if (!doc) {
-    view.dispatch(tr.setMeta(copilotKey, {selection:'', show: true}));
+    view.dispatch(tr.setMeta(copilotKey, {selection:'', contextBefore: '', show: true}));
     return;
   }
 
   const serializer = ctx.get(serializerCtx);
   const selectionText = serializer(doc);
   
-  view.dispatch(tr.setMeta(copilotKey, {selection: selectionText, show: true}));
+  view.dispatch(tr.setMeta(copilotKey, {
+    selection: (from === to) ? '' : selectionText, 
+    contextBefore: selectionText, 
+    show: true
+  }));
 }
 
 function hideHint(ctx: Ctx) {
@@ -100,22 +104,11 @@ const copilotPlugin = $prose((ctx: Ctx) => {
         return false;
       },
       handleDOMEvents: {
-        "mousedown": (_view, e: MouseEvent) => {
+        "mousedown": () => {
           if (!aiEnabled) {
             return false;
           }
-
-          if (!shown) {
-            return false;
-          }
-
-          const eTarget = e.target;
-          if ((eTarget instanceof HTMLElement) && copilotDiv?.contains(eTarget)) {
-            e.stopPropagation();
-            return true;
-          }
-
-          //shown && hideHint(ctx);
+          shown && hideHint(ctx);
           return false;
         }
       },
@@ -165,7 +158,8 @@ const copilotPlugin = $prose((ctx: Ctx) => {
 
         copilotViewApp = createApp(CopilotView, {
           ctx: ctx, 
-          selection: message.selection??'',
+          selection: message.selection || '',
+          contextBefore: message.contextBefore || '',
           apply: applyHint,
           hide: hideHint,
         });

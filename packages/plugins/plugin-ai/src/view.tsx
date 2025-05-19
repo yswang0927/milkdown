@@ -4,7 +4,6 @@ import { Icon } from '@milkdown/kit/component'
 import { Crepe } from '@milkdown/crepe'
 import clsx from 'clsx'
 import {
-  computed,
   defineComponent,
   ref,
   h,
@@ -12,6 +11,7 @@ import {
   onMounted,
 } from 'vue'
 import DOMPurify from 'dompurify'
+import { computePosition, flip, offset, shift } from '@floating-ui/dom'
 
 import OpenAI from "openai"
 
@@ -24,6 +24,7 @@ import {
   arrowRightIcon,
   chevronRight,
   discardIcon,
+  loadingIcon,
   insertIcon,
   refreshIcon,
   sendIcon,
@@ -31,6 +32,9 @@ import {
   translationIcon,
   writerIcon1,
   writerIcon2,
+  writerIcon3,
+  writerIcon4,
+  writerIcon5,
 } from './icons'
 
 
@@ -40,6 +44,7 @@ Fragment
 type CopilotViewProps = {
   ctx: Ctx,
   selection: string
+  contextBefore: string
   apply: (ctx: Ctx, content: string, insert: boolean) => void
   hide: (ctx: Ctx) => void
 }
@@ -55,6 +60,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       type: String,
       required: false,
     },
+    contextBefore: {
+      type: String,
+      required: false,
+    },
     apply: {
       type: Function,
       required: true,
@@ -65,11 +74,13 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     },
   },
   setup(props) {
-    const { ctx, selection, apply, hide } = props
+    const { ctx, selection, contextBefore, apply, hide } = props
     const aiConfigs = ctx.get(aiConfig.key)
 
-    const contentDivRef = ref<HTMLElement>()
+    const copilotViewDivRef = ref<HTMLElement>()
+    const mainContentDivRef = ref<HTMLElement>()
     const crepeEditorRef = ref<any>()
+    const promptInputWrapRef = ref<HTMLElement>()
     const promptInputRef = ref<HTMLTextAreaElement>()
     const dropdownMenuRef = ref<HTMLElement>()
 
@@ -78,11 +89,13 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const currentPromptRef = ref<string>('')
     const mainContentRef = ref<string>('')
 
-    const hasThinkingRef = ref<boolean>(true)
+    const hasThinkingRef = ref<boolean>(false)
     const thinkingFoldedRef = ref<boolean>(false)
     const thinkingEndRef = ref<boolean>(false)
     const thinkingContentDivRef = ref<HTMLElement>()
-    
+
+    // 0-初始状态,1-等待响应,2-正在输出,3-输出完成,9-响应失败
+    const aiStatusRef = ref<number>(0)
 
     const openAIClient = new OpenAI({
       apiKey: aiConfigs.apiKey,
@@ -91,7 +104,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     });
 
     async function fetchAIHint(prompt: string) {
+      aiStatusRef.value = 1;
       hasThinkingRef.value = false;
+      thinkingEndRef.value = false;
+      thinkingFoldedRef.value = false;
       renderThinking("");
       renderMainContent("");
 
@@ -101,7 +117,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
 
     
       let lastUpdateTime = 0;
-      const THROTTLE_INTERVAL = 200; // 节流间隔
+      const THROTTLE_INTERVAL = 150; // 节流间隔
       // 创建一个节流更新函数
       const throttledUpdate = (thinkingText: string, mainText: string, immediate: boolean = false) => {
         const now = Date.now();
@@ -144,6 +160,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     
         // 响应流式输出
         for await (const chunk of newStream) {
+          aiStatusRef.value = 2;
           if (stoppingOutputRef.value) {
             break;
           }
@@ -167,6 +184,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             content = content.replace('</think>', '');
             inThinking = false;
             thinkingEndRef.value = true;
+            thinkingFoldedRef.value = true;
           }
 
           // 如果在思考块内，为每个新行添加 > 前缀
@@ -215,6 +233,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         }
     
       } catch (error) {
+        aiStatusRef.value = 9;
         console.error(">> Error: AI chat completion error:", error);
         return;
       }
@@ -222,6 +241,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       // 确保最后一次更新一定会执行
       throttledUpdate('', mainText, true);
       mainContentRef.value = mainText;
+      aiStatusRef.value = 3;
     }
 
     const foldThinking = () => {
@@ -238,8 +258,8 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const renderMainContent = (markdown: string) => {
       if (crepeEditorRef.value) {
         crepeEditorRef.value.action(replaceAll(markdown || ''));
-        if (contentDivRef.value) {
-          contentDivRef.value.scrollTop = contentDivRef.value?.scrollHeight;
+        if (mainContentDivRef.value) {
+          mainContentDivRef.value.scrollTop = mainContentDivRef.value?.scrollHeight;
         }
       }
     }
@@ -267,7 +287,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       hide(ctx);
     }
 
-    const resend = () => {
+    const reGenerate = () => {
       const currentPrompt = currentPromptRef.value;
       if (currentPrompt && currentPrompt.trim()) {
         fetchAIHint(currentPrompt);
@@ -275,19 +295,21 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     }
 
     const writing = (_ctx: Ctx, type: string) => {
-      if (!selection) {
+      let content = selection || contextBefore;
+      if (!content) {
         return;
       }
       let prompt = aiConfigs.prompts['article:'+ type];
       if (!prompt) {
         return;
       }
-      prompt = prompt.replaceAll('{{content}}', selection);
+      prompt = prompt.replace('{{content}}', content);
       fetchAIHint(prompt);
     }
 
     const translate = (_ctx: Ctx, lang: string) => {
-      if (!selection) {
+      let content = selection || contextBefore;
+      if (!content) {
         return;
       }
       let prompt = aiConfigs.prompts[AIPromptsKey.Translation];
@@ -295,7 +317,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         return;
       }
       prompt = prompt.replaceAll('{{lang}}', lang);
-      prompt = prompt.replaceAll('{{content}}', selection);
+      prompt = prompt.replace('{{content}}', content);
       fetchAIHint(prompt);
     }
 
@@ -304,6 +326,18 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         const textarea = promptInputRef.value;
         let inputValue = textarea.value.trim();
         if (inputValue) {
+          if (inputValue.includes('前面的内容')
+            || inputValue.includes('前面内容')
+            || inputValue.includes('上述内容')
+            || inputValue.includes('选择的内容')
+            || inputValue.includes('选中的内容')
+            || inputValue.includes('选中内容')) {
+              let prepend = selection || contextBefore;
+              if (prepend) {
+                inputValue = prepend + '\n\n' + inputValue;
+              }
+          }
+          
           fetchAIHint(inputValue);
         } else {
           textarea.focus();
@@ -315,16 +349,35 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       const menu = dropdownMenuRef.value;
       if (menu) {
         if (show) {
-          menu.classList.remove('hide');
+          menu.classList.add('shown');
+
+          if (promptInputWrapRef.value) {
+            // 使用 floating-ui/dom 来自动计算位置
+            computePosition(promptInputWrapRef.value, menu, {
+              placement: 'bottom-start',
+              middleware: [flip(), shift(), offset({mainAxis: 0, crossAxis: 0})]
+            }).then(({ x, y }) => {
+              Object.assign(menu.style, {
+                left: `${x}px`,
+                top: `${y}px`,
+              });
+            });
+          }
+
         } else {
-          menu.classList.add('hide');
+          menu.classList.remove('shown');
         }
       }
     };
 
     onMounted(() => {
+      const copilotViewDiv = copilotViewDivRef.value;
+      if (!copilotViewDiv) {
+        return;
+      }
+
       const crepe = new Crepe({
-        root: contentDivRef.value,
+        root: mainContentDivRef.value,
         defaultValue: ' ',
         featureConfigs: {
           [Crepe.Feature.CodeMirror]: {
@@ -344,10 +397,20 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         crepe.setReadonly(true);
       });
 
-      // 绑定输入框上的事件
-      if (promptInputRef.value) {
-        const textarea = promptInputRef.value;
+      copilotViewDiv.addEventListener('mousedown', (e: MouseEvent) => {
+        e.stopPropagation();
+        const targetEle = e.target;
+        if (!targetEle) {
+          return;
+        }
+        if (!dropdownMenuRef.value?.contains(targetEle as HTMLElement)) {
+          toggleDropdownMenu(false);
+        }
+      });
 
+      // 绑定输入框上的事件
+      const textarea = promptInputRef.value;
+      if (textarea) {
         ['mousedown', 'pointerdown', 'keydown', 'keypress', 'paste'].forEach((evtName) => {
           textarea.addEventListener(evtName, (e:any) => {
             e.stopPropagation();
@@ -376,80 +439,103 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           e.stopPropagation();
           toggleDropdownMenu(textarea.value.trim().length === 0);
         }, false);
+
+        setTimeout(function(){
+          textarea.focus();
+        }, 200);
+        
       }
 
     })
 
     return () => {
       return (
-        <>
-          <div class="milkdown-copilot-viewpanel">
-            <div class="milkdown-copilot-inner">
-              <div class={clsx('milkdown-copilot-thinking', hasThinkingRef.value?'':'hide' , thinkingFoldedRef.value?'closed':'')} tabindex="-1">
-                <div class="milkdown-copilot-thinking-header" onClick={foldThinking}>
-                  <div class="thinking-header-icon"><Icon icon={arrowRightIcon}/></div>
-                  <div class="thinking-header-text">
-                    <span class="status-text">{thinkingEndRef.value ? '已思考完':'正在思考中...'}</span>
-                  </div>
+        <div class="milkdown-copilot-viewpanel" ref={copilotViewDivRef}>
+          <div class="milkdown-copilot-wrap">
+            {aiStatusRef.value === 1 && (
+              <div class="milkdown-copilot-loading">
+                <div class="copilot-loading-icon1">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="25 25 50 50"><circle r="20" cy="50" cx="50"></circle></svg>
                 </div>
-                <div class="milkdown-copilot-thinking-content" ref={thinkingContentDivRef}></div>
+                <div class="copilot-loading-icon2"><Icon icon={aiIcon}/></div>
               </div>
-              <div class="milkdown-copilot-content" tabindex="-1" ref={contentDivRef}></div>
-              <div class={clsx("milkdown-copilot-actions")}>
-                <div class="actions-left">
-                  <div class="ai-loading-tip">
-                    <span class="ai-loading-icon"><Icon icon={aiIcon}/></span>
-                    <span class="ai-loading-text">AI思考中...</span>
-                  </div>
-                </div>
-              </div>
-              <div class="milkdown-copilot-actions">
-                <div class="actions-left">
-                  <div class="ai-loading-tip">
-                    <span class="ai-loading-icon"><Icon icon={aiIcon}/></span>
-                    <span class="ai-loading-text">AI正在输出...</span>
-                  </div>
-                </div>
-                <div class="actions-right">
-                  <button class="copilot-btn-stop" onClick={onClick(stopOutput)}>
-                    <span class="copilot-btn-icon"><Icon icon={stopIcon}/></span>
-                    <span class="copilot-btn-text">停止输出</span>
-                  </button>
+            )}
+            <div tabindex="-1" class={clsx(
+              'milkdown-copilot-thinking-panel', 
+              hasThinkingRef.value?'shown':'',
+              thinkingFoldedRef.value?'':'opened'
+              )}>
+              <div class="milkdown-copilot-thinking-header" onClick={foldThinking}>
+                <div class="milkdown-copilot-thinking-header-icon"><Icon icon={arrowRightIcon}/></div>
+                <div class="milkdown-copilot-thinking-header-text">
+                  <span class="status-text">{thinkingEndRef.value ? '已思考完':'正在思考中...'}</span>
                 </div>
               </div>
-              <div class="milkdown-copilot-actions">
-                <div class="actions-left">
-                  <button class="copilot-btn-accept" onClick={onClick(applyReplace)}>
-                    <span class="copilot-btn-icon"><Icon icon={acceptIcon}/></span>
-                    <span class="copilot-btn-text">接受</span>
-                  </button>
-                  <button class="copilot-btn-discard" onClick={onClick(discard)}>
-                    <span class="copilot-btn-icon"><Icon icon={discardIcon}/></span>
-                    <span class="copilot-btn-text">弃用</span>
-                  </button>
-                  <button class="copilot-btn-insert" onClick={onClick(applyInsert)}>
-                    <span class="copilot-btn-icon"><Icon icon={insertIcon}/></span>
-                    <span class="copilot-btn-text">在原文后插入</span>
-                  </button>
-                </div>
-                <div class="actions-right">
-                  <button class="copilot-btn-rehint" onClick={onClick(resend)}>
-                    <span class="copilot-btn-icon"><Icon icon={refreshIcon}/></span>
-                    <span class="copilot-btn-text">重新生成</span>
-                  </button>
+              <div class="milkdown-copilot-thinking-content" ref={thinkingContentDivRef}></div>
+            </div>
+            <div tabindex="-1" class={clsx(
+              'milkdown-copilot-content',
+              (thinkingEndRef.value && (aiStatusRef.value === 2 || aiStatusRef.value === 3))?'shown':''
+            )} ref={mainContentDivRef}></div>
+            <div class={clsx(
+              "milkdown-copilot-actions",
+              (aiStatusRef.value === 2)?'shown':''
+            )}>
+              <div class="actions-left">
+                <div class="ai-loading-tip">
+                  <span class="ai-loading-icon"><Icon icon={aiIcon}/></span>
+                  <span class="ai-loading-text">AI撰写中...</span>
                 </div>
               </div>
-              <div class="milkdown-copilot-input-portal">
-                <div class="milkdown-copilot-input">
-                  <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
-                  <div class="copilot-input-wrapper">
-                    <textarea rows="1" cols="20" placeholder="想让我做什么呢?" ref={promptInputRef}></textarea>
-                  </div>
-                  <div class="copilot-input-actions">
-                    <button class="copilot-input-send-btn" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>
-                  </div>
+              <div class="actions-right">
+                <button class="copilot-btn-stop" title="停止" onClick={onClick(stopOutput)}>
+                  <span class="copilot-btn-icon"><Icon icon={stopIcon}/></span>
+                </button>
+              </div>
+            </div>
+            <div class={clsx(
+              "milkdown-copilot-actions",
+              (aiStatusRef.value === 3)?'shown':''
+            )}>
+              <div class="actions-left">
+                <button class="copilot-btn-accept" onClick={onClick(applyReplace)}>
+                  <span class="copilot-btn-icon"><Icon icon={acceptIcon}/></span>
+                  <span class="copilot-btn-text">替换</span>
+                </button>
+                <button class="copilot-btn-insert" onClick={onClick(applyInsert)}>
+                  <span class="copilot-btn-icon"><Icon icon={insertIcon}/></span>
+                  <span class="copilot-btn-text">在原文后插入</span>
+                </button>
+                <button class="copilot-btn-discard" onClick={onClick(discard)}>
+                  <span class="copilot-btn-icon"><Icon icon={discardIcon}/></span>
+                  <span class="copilot-btn-text">弃用</span>
+                </button>
+              </div>
+              <div class="actions-right">
+                <button class="copilot-btn-rehint" onClick={onClick(reGenerate)}>
+                  <span class="copilot-btn-icon"><Icon icon={refreshIcon}/></span>
+                  <span class="copilot-btn-text">重新生成</span>
+                </button>
+              </div>
+            </div>
+            <div class={clsx(
+              'milkdown-copilot-input-panel',
+              (aiStatusRef.value === 0 || aiStatusRef.value === 3)?'shown':''
+            )}>
+              <div class="milkdown-copilot-input-wrap" ref={promptInputWrapRef}>
+                <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
+                <div class="copilot-input">
+                  <textarea rows="1" cols="20" placeholder="想让我做什么呢?" ref={promptInputRef}></textarea>
                 </div>
-                <div class="milkdown-copilot-dropdown" ref={dropdownMenuRef}>
+                <div class="copilot-input-actions">
+                  <button class="copilot-input-send-btn" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>
+                </div>
+              </div>
+              <div class={clsx(
+                'milkdown-copilot-dropdown',
+                (aiStatusRef.value === 0)?'shown':''
+              )} ref={dropdownMenuRef}>
+                <div class="dropdown-menu">
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
                     <div class="menu-icon"><Icon icon={aiIcon2}/></div>
                     <div class="menu-text">润色</div>
@@ -459,37 +545,36 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                     <div class="menu-text">扩写</div>
                   </div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'continue'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon1}/></div>
+                    <div class="menu-icon"><Icon icon={writerIcon5}/></div>
                     <div class="menu-text">续写</div>
                   </div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'simplify'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon2}/></div>
-                    <div class="menu-text">缩写</div>
-                  </div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'summarize'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon2}/></div>
+                    <div class="menu-icon"><Icon icon={writerIcon3}/></div>
                     <div class="menu-text">总结</div>
                   </div>
+                  <div class="menu-divider"></div>
                   <div class="dropdown-menu-item submenu">
                     <div class="menu-icon"><Icon icon={translationIcon}/></div>
                     <div class="menu-text">翻译</div>
                     <div class="submenu-icon"><Icon icon={chevronRight}/></div>
-                    <div class="milkdown-copilot-dropdown" onClick={onClick((ctx) => translate(ctx, 'english'))}>
-                      <div class="dropdown-menu-item">
-                        <div class="menu-icon">🇬🇧</div>
-                        <div class="menu-text">英文</div>
-                      </div>
-                      <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'chinese'))}>
-                        <div class="menu-icon">🇨🇳</div>
-                        <div class="menu-text">简体中文</div>
-                      </div>
-                      <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'japanese'))}>
-                        <div class="menu-icon">🇯🇵</div>
-                        <div class="menu-text">日文</div>
-                      </div>
-                      <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'korean'))}>
-                        <div class="menu-icon">🇰🇷</div>
-                        <div class="menu-text">韩文</div>
+                    <div class="milkdown-copilot-dropdown">
+                      <div class="dropdown-menu">
+                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'english'))}>
+                          <div class="menu-icon">🇬🇧</div>
+                          <div class="menu-text">英文</div>
+                        </div>
+                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'chinese'))}>
+                          <div class="menu-icon">🇨🇳</div>
+                          <div class="menu-text">简体中文</div>
+                        </div>
+                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'japanese'))}>
+                          <div class="menu-icon">🇯🇵</div>
+                          <div class="menu-text">日文</div>
+                        </div>
+                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'korean'))}>
+                          <div class="menu-icon">🇰🇷</div>
+                          <div class="menu-text">韩文</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -497,7 +582,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               </div>
             </div>
           </div>
-        </>
+        </div>
       )
     }
   }
