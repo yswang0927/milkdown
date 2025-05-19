@@ -158,19 +158,20 @@
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
+    color: rgba(0,0,0,0.8);
 }
 .milkdown-copilot-thinking-header-icon {
     display: flex;
     align-items: center;
+    justify-content: center;
     height: 1em;
     width: 1em;
     overflow: hidden;
 }
-.milkdown-copilot-thinking-header-icon svg {
+.milkdown-copilot-thinking-header-icon .fold-icon {
+    display: inline-block;
     height: 1em;
     width: 1em;
-    display: inline-block;
-    opacity: 0.6;
     transition: transform 0.2s;
 }
 .milkdown-copilot-thinking-header-text {
@@ -199,7 +200,7 @@
 .milkdown-copilot-thinking-panel.opened .milkdown-copilot-thinking-content {
     display: block;
 }
-.milkdown-copilot-thinking-panel.opened .milkdown-copilot-thinking-header-icon svg {
+.milkdown-copilot-thinking-panel.opened .milkdown-copilot-thinking-header-icon .fold-icon {
     transform: rotate(90deg);
 }
 

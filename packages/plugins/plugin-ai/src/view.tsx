@@ -28,6 +28,7 @@ import {
   refreshIcon,
   sendIcon,
   stopIcon,
+  thinkingIcon,
   translationIcon,
   warnIcon,
   writerIcon1,
@@ -470,10 +471,11 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               thinkingFoldedRef.value?'':'opened'
               )}>
               <div class="milkdown-copilot-thinking-header" onClick={foldThinking}>
-                <div class="milkdown-copilot-thinking-header-icon"><Icon icon={arrowRightIcon}/></div>
+                <div class="milkdown-copilot-thinking-header-icon"><Icon icon={thinkingIcon}/></div>
                 <div class="milkdown-copilot-thinking-header-text">
                   <span class="status-text">{thinkingEndRef.value ? '已思考完':'正在思考中...'}</span>
                 </div>
+                <div class="milkdown-copilot-thinking-header-icon"><Icon icon={arrowRightIcon} class='fold-icon'/></div>
               </div>
               <div class="milkdown-copilot-thinking-content" ref={thinkingContentDivRef}></div>
             </div>
