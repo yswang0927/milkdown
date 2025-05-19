@@ -117,7 +117,8 @@ export class TooltipProvider {
     })
       .then(({ x, y }) => {
         Object.assign(this.element.style, {
-          left: `${x}px`,
+          // yswang: ${x} => ${Math.max(-10, x)}
+          left: `${Math.max(-10, x)}px`,
           top: `${y}px`,
         })
       })
