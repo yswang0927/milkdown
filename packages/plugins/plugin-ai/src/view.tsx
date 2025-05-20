@@ -103,6 +103,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const thinkingContentDivRef = ref<HTMLElement>()
 
     const copilotStatusRef = ref<CopilotStatus>(CopilotStatus.INIT)
+    const copilotErrorMsgRef = ref<string>("")
 
     const openAIClient = new OpenAI({
       apiKey: aiConfigs.apiKey,
@@ -231,8 +232,18 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           }
         }
     
-      } catch (error) {
+      } catch (error: any) {
         copilotStatusRef.value = CopilotStatus.ERROR;
+        let errorMsg = "";
+        if (typeof error === 'string') {
+          errorMsg = error;
+        } 
+        else if (typeof error === 'object') {
+          if (error.message !== undefined) {
+            errorMsg = `(${error.message})`;
+          }
+        }
+        copilotErrorMsgRef.value = errorMsg;
         console.error(">> Error: AI chat completion error:", error);
         return;
       }
@@ -461,8 +472,9 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             )}
             {copilotStatusRef.value === CopilotStatus.ERROR && (
               <div class="milkdown-copilot-error">
-                <Icon icon={warnIcon}/>
-                <span>AI服务异常,请稍后重试</span>
+                <div><Icon icon={warnIcon}/></div>
+                <div>AI服务异常,请稍后重试</div>
+                <div>{copilotErrorMsgRef.value}</div>
               </div>
             )}
             <div tabindex="-1" class={clsx(
@@ -527,7 +539,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             </div>
             <div class={clsx(
               'milkdown-copilot-input-panel',
-              (copilotStatusRef.value === CopilotStatus.INIT || copilotStatusRef.value === CopilotStatus.FINISHED)?'shown':''
+              (copilotStatusRef.value === CopilotStatus.INIT 
+                || copilotStatusRef.value === CopilotStatus.FINISHED
+                || copilotStatusRef.value === CopilotStatus.ERROR
+              )?'shown':''
             )}>
               <div class="milkdown-copilot-input-wrap" ref={promptInputWrapRef}>
                 <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
@@ -540,7 +555,9 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               </div>
               <div class={clsx(
                 'milkdown-copilot-dropdown',
-                (copilotStatusRef.value === CopilotStatus.INIT)?'shown':''
+                (copilotStatusRef.value === CopilotStatus.INIT 
+                  || copilotStatusRef.value === CopilotStatus.ERROR
+                )?'shown':''
               )} ref={dropdownMenuRef}>
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
