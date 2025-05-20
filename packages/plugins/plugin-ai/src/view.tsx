@@ -494,8 +494,9 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                 </div>
               </div>
               <div class="actions-right">
-                <button class="copilot-btn-stop" title="停止" onClick={onClick(stopOutput)}>
+                <button class="btn-intent-warn" title="停止AI继续生成" onClick={onClick(stopOutput)}>
                   <span class="copilot-btn-icon"><Icon icon={stopIcon}/></span>
+                  <span class="copilot-btn-text">停止生成</span>
                 </button>
               </div>
             </div>
@@ -504,21 +505,21 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               (copilotStatusRef.value === CopilotStatus.FINISHED)?'shown':''
             )}>
               <div class="actions-left">
-                <button class="copilot-btn-accept" onClick={onClick(applyReplace)}>
+                <button onClick={onClick(applyReplace)}>
                   <span class="copilot-btn-icon"><Icon icon={acceptIcon}/></span>
                   <span class="copilot-btn-text">替换</span>
                 </button>
-                <button class="copilot-btn-insert" onClick={onClick(applyInsert)}>
+                <button onClick={onClick(applyInsert)}>
                   <span class="copilot-btn-icon"><Icon icon={insertIcon}/></span>
                   <span class="copilot-btn-text">在原文后插入</span>
                 </button>
-                <button class="copilot-btn-discard" onClick={onClick(discard)}>
+                <button onClick={onClick(discard)}>
                   <span class="copilot-btn-icon"><Icon icon={discardIcon}/></span>
                   <span class="copilot-btn-text">弃用</span>
                 </button>
               </div>
               <div class="actions-right">
-                <button class="copilot-btn-rehint" onClick={onClick(reGenerate)}>
+                <button onClick={onClick(reGenerate)}>
                   <span class="copilot-btn-icon"><Icon icon={refreshIcon}/></span>
                   <span class="copilot-btn-text">重新生成</span>
                 </button>
@@ -531,7 +532,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               <div class="milkdown-copilot-input-wrap" ref={promptInputWrapRef}>
                 <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
                 <div class="copilot-input">
-                  <textarea rows="1" cols="20" placeholder="想让我做什么呢?" ref={promptInputRef}></textarea>
+                  <textarea rows="1" cols="20" placeholder="输入要求，或从下方选择场景提问" ref={promptInputRef}></textarea>
                 </div>
                 <div class="copilot-input-actions">
                   <button class="copilot-input-send-btn" title="发送(Ctrl+Enter)" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>

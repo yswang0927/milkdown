@@ -133,6 +133,9 @@
             padding: 5px 10px;
             text-decoration: none;
             color: inherit;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         #toc_list > a:hover {
             background-color: rgba(51,77,102,.06);
@@ -196,6 +199,7 @@
                     console.log(item);
                     const a = document.createElement('a');
                     a.href = `#${item.id}`;
+                    a.title = item.text;
                     a.dataset.level = item.level;
                     a.style.marginLeft = `${(item.level-1) * 16}px`;
                     a.innerText = item.text;
