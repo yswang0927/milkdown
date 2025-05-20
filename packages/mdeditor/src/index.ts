@@ -66,6 +66,8 @@ export class MarkdownEditor {
       return URL.createObjectURL(file)
     };
 
+    const isMacos = (navigator.userAgent.indexOf('Macintosh') !== -1) 
+                  || (navigator.platform && navigator.platform.indexOf('Mac') !== -1);
     const isEditable = this.options.editable !== undefined ? this.options.editable : true;
     const aiEnabled = this.options.ai && this.options.ai.enabled && this.options.ai.baseUrl;
 
@@ -86,7 +88,7 @@ export class MarkdownEditor {
           }
         },
         [Crepe.Feature.Placeholder]: {
-          text: '输入 “/” 可插入内容' + (aiEnabled ? '或 "Command + /" 唤起AI助手' : ''),
+          text: '输入 “ / ” 可插入内容' + (aiEnabled ? '或 “ '+ (isMacos?'Command':'Ctrl') +' + / ” 唤起AI助手' : '')
         },
         [Crepe.Feature.BlockEdit]: {
           slashMenuTextGroupLabel: '普通',

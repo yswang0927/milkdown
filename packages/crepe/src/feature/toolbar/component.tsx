@@ -41,7 +41,7 @@ import {
 import { mathInlineSchema } from '../latex/inline-latex'
 
 // yswang
-import { showAIHint, aiConfig } from '@milkdown/plugin-ai'
+import { showAiCopilot, aiConfig } from '@milkdown/plugin-ai'
 
 h
 Fragment
@@ -166,7 +166,7 @@ export const Toolbar = defineComponent<ToolbarProps>({
     const aiConfigs = ctx?.get(aiConfig.key) || {};
     const isAIEnabled = !!aiConfigs.enabled;
     const callAI = (ctx: Ctx) => {
-      showAIHint(ctx);
+      showAiCopilot(ctx);
       hide?.();
     };
 

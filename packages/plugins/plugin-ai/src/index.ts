@@ -12,7 +12,7 @@ import { CopilotView } from "./view"
 const copilotKey = new PluginKey("MilkdownAICopilot");
 
 // 显示AI交互框
-export function showAIHint(ctx: Ctx) {
+export function showAiCopilot(ctx: Ctx) {
   const view = ctx.get(editorViewCtx);
   const { state } = view;
   const tr = state.tr;
@@ -62,8 +62,11 @@ const copilotPlugin = $prose((ctx: Ctx) => {
   const { enabled, baseUrl } = ctx.get(aiConfig.key);
   const aiEnabled = enabled && baseUrl;
 
+  const isMacos = (navigator.userAgent.indexOf('Macintosh') !== -1) 
+                  || (navigator.platform && navigator.platform.indexOf('Mac') !== -1);
+
   let shown = false;
-  let copilotDiv: (HTMLElement | null);
+  let copilotDiv: (HTMLElement | null) = null;
   let copilotViewApp: App;
 
   return new Plugin({
@@ -81,16 +84,10 @@ const copilotPlugin = $prose((ctx: Ctx) => {
 
         const eKey = evt.key.toLowerCase();
 
-        /*const eTarget = evt.target;
-        if ((eTarget instanceof HTMLElement) && copilotDiv?.contains(eTarget) && (eKey !== 'escape')) {
-          evt.stopPropagation();
-          return true;
-        }*/
-
         // 快捷键 Ctrl + / 唤起AI-Copilot
-        if (eKey === "/" && evt.ctrlKey && !shown) {
+        if (eKey === "/" && (evt.ctrlKey || (isMacos && evt.metaKey)) && !shown) {
           evt.stopPropagation();
-          showAIHint(ctx);
+          showAiCopilot(ctx);
           return true;
         }
 
@@ -129,7 +126,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
         }
         
         const message = tr.getMeta(copilotKey);
-        console.log('>>> message: ', message);
+        //console.log('>>> message: ', message);
         if (!message || message.show === undefined) {
           /*if (value.widget && tr.docChanged) {
             return {

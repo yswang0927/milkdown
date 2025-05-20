@@ -115,19 +115,40 @@
 }
 
 .milkdown .milkdown-slash-menu {
+    font-size: 0.95em;
     border-radius: 6px;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group {
+    margin-bottom: 5px;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group h6 {
+    font-size: 1em;
+    padding: 6px 8px;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group + .menu-group::before {
+    margin: 0;
 }
 .milkdown .milkdown-slash-menu .tab-group {
     padding: 0;
 }
 .milkdown .milkdown-slash-menu .tab-group ul li {
+    padding: 4px 8px;
     font-size: 1em;
     border-radius: 5px;
 }
 .milkdown .milkdown-slash-menu .menu-groups .menu-group li {
     padding: 4px 8px;
+    gap: 10px;
     border-radius: 4px;
     font-size: 1em;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group li > span {
+    font-size: 1em;
+    font-weight: 400;
+}
+.milkdown .milkdown-slash-menu .menu-groups .menu-group li svg {
+    width: 1.5em;
+    height: 1.5em;
 }
 
 .milkdown .milkdown-mermaid-preview-panel p {

@@ -21,6 +21,7 @@ import type { MenuItemGroup } from './utils'
 import { CrepeFeature } from '../../..'
 import { FeaturesCtx } from '../../../core/slice'
 import {
+  aiIcon,
   bulletListIcon,
   codeIcon,
   dividerIcon,
@@ -47,6 +48,9 @@ import {
   clearRange,
 } from './utils'
 
+// yswang
+import { showAiCopilot, aiConfig } from '@milkdown/plugin-ai'
+
 export function getGroups(
   filter?: string,
   config?: BlockEditFeatureConfig,
@@ -58,8 +62,28 @@ export function getGroups(
   const isTableEnabled = flags?.includes(CrepeFeature.Table)
   // yswang
   const isMermaidEnabled = flags?.includes(CrepeFeature.Mermaid)
+  const aiConfigs = ctx?.get(aiConfig.key);
+  const isAiEnabled = aiConfigs?.enabled && aiConfigs?.baseUrl;
 
   const groupBuilder = new GroupBuilder()
+
+  // yswang add AI
+  if (isAiEnabled) {
+    groupBuilder.addGroup('ai', 'AI')
+      .addItem('ai', {
+        label: 'AI助手',
+        icon: aiIcon,
+        onRun: (ctx) => {
+          const view = ctx.get(editorViewCtx)
+          const { dispatch, state } = view
+          const command = clearContentAndSetBlockType(paragraphSchema.type(ctx))
+          command(state, dispatch)
+          
+          showAiCopilot(ctx);
+        }
+      });
+  }
+
   groupBuilder
     .addGroup('text', config?.slashMenuTextGroupLabel ?? 'Text')
     .addItem('text', {
