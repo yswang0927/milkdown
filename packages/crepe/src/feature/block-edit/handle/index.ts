@@ -11,7 +11,7 @@ import { createApp, type App } from 'vue'
 import type { BlockEditFeatureConfig } from '../index'
 
 import { menuIcon, plusIcon } from '../../../icons'
-import { menuAPI } from '../menu'
+import { menuAPI, handleMenuAPI } from '../menu'
 import { BlockHandle } from './component'
 
 export class BlockHandleView implements PluginView {
@@ -28,6 +28,8 @@ export class BlockHandleView implements PluginView {
       onAdd: this.onAdd,
       addIcon: config?.handleAddIcon ?? (() => plusIcon),
       handleIcon: config?.handleDragIcon ?? (() => menuIcon),
+      // yswang
+      onHandle: this.onHandle,
     })
     app.mount(content)
     this.#app = app
@@ -86,6 +88,12 @@ export class BlockHandleView implements PluginView {
 
     this.#provider.hide()
     ctx.get(menuAPI.key).show(tr.selection.from)
+  }
+
+  onHandle = (trigger: any) => {
+    // yswang add
+    const ctx = this.#ctx
+    ctx.get(handleMenuAPI.key).show(trigger)
   }
 }
 

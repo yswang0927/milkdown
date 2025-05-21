@@ -120,7 +120,7 @@
         
         #toc {
             height: 100%;
-            width: 240px;
+            width: 300px;
             padding: 10px;
             overflow: auto;
             color: rgba(0, 0, 0, .64);
@@ -196,7 +196,7 @@
             if (tocs.length > 0) {
                 toc.innerHTML = '';
                 tocs.forEach((item) => {
-                    console.log(item);
+                    //console.log(item);
                     const a = document.createElement('a');
                     a.href = `#${item.id}`;
                     a.title = item.text;

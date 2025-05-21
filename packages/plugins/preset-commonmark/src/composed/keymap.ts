@@ -10,6 +10,8 @@ import {
   listItemKeymap,
   orderedListKeymap,
   paragraphKeymap,
+  // yswang
+  taskListKeymap,
 } from '../node'
 
 /// @internal
@@ -26,4 +28,6 @@ export const keymap: MilkdownPlugin[] = [
   emphasisKeymap,
   inlineCodeKeymap,
   strongKeymap,
+  // yswang
+  taskListKeymap,
 ].flat()

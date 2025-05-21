@@ -15,6 +15,13 @@ import type { BlockEditFeatureConfig } from '../index'
 import { isInCodeBlock, isInList } from '../../../utils'
 import { Menu } from './component'
 
+// yswang
+import { computePosition, flip, offset, shift } from '@floating-ui/dom'
+import { HandleMenuComponent } from './handle-menu'
+
+// yswang
+export const handleMenu = slashFactory('HANDLE_MENU')
+
 export const menu = slashFactory('CREPE_MENU')
 
 export interface MenuAPI {
@@ -158,4 +165,98 @@ function isSelectionAtEndOfNode(selection: Selection) {
   const offset = $head.parentOffset
 
   return offset === parent.content.size
+}
+
+// yswang add handle-menu
+export interface HanleMenuApiType {
+  show: (trigger: HTMLElement) => void
+  hide: () => void
+}
+export const handleMenuAPI = $ctx(
+  {
+    show: () => {},
+    hide: () => {},
+  } as HanleMenuApiType,
+  'handleMenuAPICtx'
+)
+
+export function configureHandleMenu(ctx: Ctx, config?: BlockEditFeatureConfig) {
+  ctx.set(handleMenu.key, {
+    view: (view) => new HandleMenuView(ctx, view, config),
+  })
+}
+
+class HandleMenuView implements PluginView {
+  readonly #content: HTMLElement
+  readonly #app: App
+  readonly #menuProvider: SlashProvider
+
+  constructor(ctx: Ctx, view: EditorView, config?: BlockEditFeatureConfig) {
+    const content = document.createElement('div');
+    content.className = 'milkdown-handle-menu';
+
+    const show = ref(false);
+    const hide = this.hide;
+    
+    const app = createApp(HandleMenuComponent, {
+      ctx: ctx,
+      config: config,
+      show: show,
+      hide: hide
+    });
+
+    this.#app = app;
+    app.mount(content);
+
+    this.#content = content;
+
+    this.#menuProvider = new SlashProvider({
+      content: this.#content,
+      debounce: 20,
+      shouldShow(this: SlashProvider, _view: EditorView) {
+        return false;
+      }
+    });
+
+    this.#menuProvider.onShow = () => {
+      show.value = true
+    }
+    this.#menuProvider.onHide = () => {
+      show.value = false
+    }
+
+    this.update(view)
+
+    ctx.set(handleMenuAPI.key, {
+      show: (trigger) => this.show(trigger),
+      hide: () => this.hide(),
+    })
+  }
+
+  update = (view: EditorView) => {
+    this.#menuProvider.update(view)
+  }
+
+  show = (trigger: HTMLElement) => {
+    this.#menuProvider.show()
+    computePosition(trigger, this.#content, {
+      placement: 'bottom-start',
+      middleware: [flip(), shift(), offset({mainAxis: 4, crossAxis: 0})]
+    }).then(({ x, y }) => {
+      Object.assign(this.#content.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+      });
+    });
+  }
+
+  hide = () => {
+    this.#menuProvider.hide()
+  }
+
+  destroy = () => {
+    this.#menuProvider.destroy()
+    this.#app.unmount()
+    this.#content.remove()
+  }
 }

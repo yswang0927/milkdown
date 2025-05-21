@@ -4,7 +4,7 @@ import type { DefineFeature, Icon } from '../shared'
 import type { GroupBuilder } from './menu/group-builder'
 
 import { configureBlockHandle } from './handle'
-import { configureMenu, menu, menuAPI } from './menu'
+import { configureMenu, menu, menuAPI, configureHandleMenu, handleMenu, handleMenuAPI } from './menu'
 
 interface BlockEditConfig {
   handleAddIcon: Icon
@@ -62,7 +62,10 @@ export const defineFeature: DefineFeature<BlockEditFeatureConfig> = (
   editor
     .config((ctx) => configureBlockHandle(ctx, config))
     .config((ctx) => configureMenu(ctx, config))
+    .config((ctx) => configureHandleMenu(ctx, config)) // yswang
     .use(menuAPI)
     .use(block)
     .use(menu)
+    .use(handleMenu)  // yswang
+    .use(handleMenuAPI) // yswang
 }

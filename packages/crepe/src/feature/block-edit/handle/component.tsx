@@ -10,6 +10,8 @@ export interface BlockHandleProps {
   onAdd: () => void
   addIcon: IconType
   handleIcon: IconType
+  // yswang
+  onHandle: (trigger: any) => void
 }
 
 export const BlockHandle = defineComponent<BlockHandleProps>({
@@ -26,9 +28,16 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
       type: Function,
       required: true,
     },
+    // yswang
+    onHandle: {
+      type: Function,
+      required: true,
+    }
   },
   setup(props) {
     const addButton = ref<HTMLDivElement>()
+    // yswang
+    const handleButton = ref<HTMLDivElement>()
 
     return () => {
       return (
@@ -50,7 +59,19 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
           >
             <Icon icon={props.addIcon()} />
           </div>
-          <div class="operation-item">
+          <div 
+            class="operation-item"
+            ref={handleButton}
+            onPointerdown={(e) => {
+              e.stopPropagation()
+              handleButton.value?.classList.add('active')
+            }}
+            onPointerup={(e) => {
+              e.stopPropagation()
+              handleButton.value?.classList.remove('active')
+              props.onHandle(handleButton.value)
+            }}
+          >
             <Icon icon={props.handleIcon()} />
           </div>
         </>

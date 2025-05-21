@@ -92,7 +92,7 @@ export class MarkdownEditor {
         },
         [Crepe.Feature.BlockEdit]: {
           slashMenuTextGroupLabel: '普通',
-          slashMenuTextLabel: '文本',
+          slashMenuTextLabel: '正文',
           slashMenuH1Label: '一级标题',
           slashMenuH2Label: '二级标题',
           slashMenuH3Label: '三级标题',

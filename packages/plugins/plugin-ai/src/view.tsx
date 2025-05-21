@@ -4,6 +4,7 @@ import { Icon } from '@milkdown/kit/component'
 import { Crepe } from '@milkdown/crepe'
 import clsx from 'clsx'
 import {
+  computed,
   defineComponent,
   ref,
   h,
@@ -105,6 +106,16 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const copilotStatusRef = ref<CopilotStatus>(CopilotStatus.INIT)
     const copilotErrorMsgRef = ref<string>("")
 
+    const dropdownMenuShouldShow = computed(() => {
+      const textarea = promptInputRef.value;
+      if (!textarea) {
+        return false;
+      }
+      return (textarea.value.trim().length === 0)
+              && (copilotStatusRef.value === CopilotStatus.INIT
+                    || copilotStatusRef.value === CopilotStatus.ERROR)
+    });
+
     const openAIClient = new OpenAI({
       apiKey: aiConfigs.apiKey,
       baseURL: aiConfigs.baseUrl,
@@ -165,6 +176,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       let inThinking = false;
       try {
         const newStream = await openAIClient.chat.completions.create(payload);
+        cleanTextarea();
     
         // 响应流式输出
         for await (const chunk of newStream) {
@@ -349,23 +361,29 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           }
           
           fetchAIHint(inputValue);
-          textarea.value = '';
-          textarea.style.height = 'auto';
         } else {
           textarea.focus();
         }
       }
     }
 
+    const cleanTextarea = () => {
+      const textarea = promptInputRef.value;
+      if (textarea) {
+        textarea.value = '';
+        textarea.style.height = 'auto';
+      }
+    };
+
     const toggleDropdownMenu = (show: boolean) => {
       const menu = dropdownMenuRef.value;
       if (menu) {
         if (show) {
           menu.classList.add('shown');
-
-          if (promptInputWrapRef.value) {
+          const inputWrapEle = promptInputWrapRef.value;
+          if (inputWrapEle) {
             // 使用 floating-ui/dom 来自动计算位置
-            computePosition(promptInputWrapRef.value, menu, {
+            computePosition(inputWrapEle, menu, {
               placement: 'bottom-start',
               middleware: [flip(), shift(), offset({mainAxis: 0, crossAxis: 0})]
             }).then(({ x, y }) => {
@@ -553,12 +571,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                   <button class="copilot-input-send-btn" title="发送(Ctrl+Enter)" onClick={onClick(sendUserInputPrompt)}><Icon icon={sendIcon}/></button>
                 </div>
               </div>
-              <div class={clsx(
-                'milkdown-copilot-dropdown',
-                (copilotStatusRef.value === CopilotStatus.INIT 
-                  || copilotStatusRef.value === CopilotStatus.ERROR
-                )?'shown':''
-              )} ref={dropdownMenuRef}>
+              <div ref={dropdownMenuRef} class={clsx(
+                'milkdown-copilot-dropdown', 
+                dropdownMenuShouldShow?'shown':''
+              )}>
                 <div class="dropdown-menu">
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
                     <div class="menu-icon"><Icon icon={aiIcon2}/></div>

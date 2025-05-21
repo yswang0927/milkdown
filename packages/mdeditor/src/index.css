@@ -31,10 +31,15 @@
 .milkdown .ProseMirror {
     padding: 0;
 }
-
+.milkdown .ProseMirror .ProseMirror-selectednode {
+    background-color: #d9eafc;
+    border-radius: 3px;
+}
 .milkdown .ProseMirror p {
     font-size: 1em;
     line-height: 1.8;
+    padding: 0;
+    margin-bottom: 7px;
 }
 
 .milkdown .crepe-placeholder::before {
@@ -58,7 +63,6 @@
     background-color: transparent;
 }
 
-
 .milkdown .milkdown-link-edit>.link-edit {
     border-radius: 6px;
     align-items: center;
@@ -72,16 +76,16 @@
 }
 
 .milkdown .milkdown-block-handle .operation-item {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
     line-height: 1.0;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .milkdown .milkdown-block-handle .operation-item svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
 }
 
 .milkdown .ProseMirror blockquote {
@@ -99,7 +103,30 @@
     bottom: 0;
     border-radius: 3px 0 0 3px;
 }
-
+.milkdown .milkdown-list-item-block li {
+    gap: 4px;
+}
+.milkdown .milkdown-list-item-block .list-item p {
+    margin: 0;
+    padding: 0;
+}
+.milkdown .milkdown-list-item-block li .label-wrapper {
+    height: 26px;
+    color: inherit;
+}
+.milkdown .milkdown-list-item-block li .label-wrapper .label {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+}
+.milkdown .milkdown-toolbar .toolbar-item.active {
+    background-color: rgba(30,100,255,.1);
+    color: #1e64ff;
+}
+.milkdown .milkdown-toolbar .toolbar-item.active svg {
+    color: inherit;
+    fill: currentColor;
+}
 
 .milkdown .milkdown-image-inline .empty-image-inline {
     border-radius: 4px;
@@ -147,8 +174,8 @@
     font-weight: 400;
 }
 .milkdown .milkdown-slash-menu .menu-groups .menu-group li svg {
-    width: 1.5em;
-    height: 1.5em;
+    width: 18px;
+    height: 18px;
 }
 
 .milkdown .milkdown-mermaid-preview-panel p {

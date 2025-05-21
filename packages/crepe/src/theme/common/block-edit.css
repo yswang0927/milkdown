@@ -146,4 +146,58 @@
       }
     }
   }
+
+  /* yswang */
+  .milkdown-handle-menu {
+    &[data-show='false'] {
+      display: none;
+    }
+
+    position: absolute;
+    z-index: 10;
+    display: block;
+    font-family: var(--crepe-font-default);
+    color: var(--crepe-color-on-surface);
+    background: var(--crepe-color-surface);
+    border-radius: 5px;
+    box-shadow: var(--crepe-shadow-1);
+
+    .milkdown-handle-menu-items {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .menu-header {
+      color: rgba(0,0,0,0.5);
+      font-size: 0.95em;
+    }
+    .menu-items {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      min-width: 28px;
+      background-color: transparent;
+      padding: 4px;
+      border-radius: 3px;
+      cursor: pointer;
+      &:hover {
+        background: var(--crepe-color-hover);
+      }
+      svg {
+        width: 1.2em;
+        height: 1.2em;
+        color: var(--crepe-color-outline);
+      }
+    }
+  }
+
 }

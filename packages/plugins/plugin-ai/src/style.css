@@ -148,7 +148,7 @@
     display: block;
 }
 .milkdown-copilot-thinking-header {
-    padding: 5px;
+    padding: 6px 8px;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;

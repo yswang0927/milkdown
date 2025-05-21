@@ -23,6 +23,8 @@ import {
   wrapInBulletListCommand,
   wrapInHeadingCommand,
   wrapInOrderedListCommand,
+  // yswang
+  wrapInTaskListCommand,
 } from '../node'
 
 /// @internal
@@ -51,4 +53,7 @@ export const commands: MilkdownPlugin[] = [
 
   toggleLinkCommand,
   updateLinkCommand,
+
+  // yswang
+  wrapInTaskListCommand,
 ]
