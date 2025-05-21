@@ -106,7 +106,7 @@
     "@codemirror/view": "^6"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.5.1",
+    "@floating-ui/dom": "^1.7.0",
     "@milkdown/core": "workspace:*",
     "@milkdown/ctx": "workspace:*",
     "@milkdown/exception": "workspace:*",

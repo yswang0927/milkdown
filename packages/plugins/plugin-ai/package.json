@@ -34,7 +34,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.5.1",
+    "@floating-ui/dom": "^1.7.0",
     "@milkdown/crepe": "workspace:*",
     "@milkdown/core": "workspace:*",
     "@milkdown/kit": "workspace:*",
