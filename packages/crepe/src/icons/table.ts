@@ -1,19 +1,3 @@
 export const tableIcon = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-  >
-    <g clip-path="url(#clip0_977_8078)">
-      <path
-        d="M20 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H20C21.1 21 22 20.1 22 19V5C22 3.9 21.1 3 20 3ZM20 5V8H5V5H20ZM15 19H10V10H15V19ZM5 10H8V19H5V10ZM17 19V10H20V19H17Z"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_977_8078">
-        <rect width="24" height="24" />
-      </clipPath>
-    </defs>
-  </svg>
+<svg width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M10.235 4h9.412v4h-9.412V4zM9.059 2h10.588C20.947 2 22 2.895 22 4v16c0 1.105-1.053 2-2.353 2H4.353C3.053 22 2 21.105 2 20V4c0-1.105 1.053-2 2.353-2h4.706zM4.353 8V4h3.529v4H4.353zm0 2v4h3.529v-4H4.353zm0 6v4h3.529v-4H4.353zm5.882 4h9.412v-4h-9.412v4zm9.412-6v-4h-9.412v4h9.412z" clip-rule="evenodd"/></svg>
 `

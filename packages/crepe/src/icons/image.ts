@@ -1,19 +1,5 @@
 export const imageIcon = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-  >
-    <g clip-path="url(#clip0_977_8075)">
-      <path
-        d="M19 5V19H5V5H19ZM19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM14.14 11.86L11.14 15.73L9 13.14L6 17H18L14.14 11.86Z"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_977_8075">
-        <rect width="24" height="24" />
-      </clipPath>
-    </defs>
-  </svg>
+<svg width="1em" height="1em" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+<path fill-rule="evenodd" d="M20.5 5.25H4v10.11l1.594-1.328a2 2 0 0 1 2.581.017l1.636 1.401 4.119-3.463a2 2 0 0 1 1.55-.452A6.5 6.5 0 0 0 12.5 17c0 1.397.44 2.69 1.19 3.75H4a2 2 0 0 1-2-2V5.25a2 2 0 0 1 2-2h16.5a2 2 0 0 1 2 2v6.272a6.5 6.5 0 0 0-2-.848zm-12 6.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4M24 17a5 5 0 1 1-10 0 5 5 0 0 1 10 0m-4.25-2.5a.75.75 0 1 0-1.5 0v1.75H16.5a.75.75 0 1 0 0 1.5h1.75v1.75a.75.75 0 1 0 1.5 0v-1.75h1.75a.75.75 0 1 0 0-1.5h-1.75z" clip-rule="evenodd"/>
+</svg>
 `
