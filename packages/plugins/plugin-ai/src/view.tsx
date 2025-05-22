@@ -167,7 +167,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       const payload: any = {
         model: aiConfigs.model,
         messages: [{ role: "user", content: prompt }],
-        stream: false,
+        stream: true,
         signal: signalAbort
       };
 
