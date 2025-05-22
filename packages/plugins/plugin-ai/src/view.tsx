@@ -25,6 +25,7 @@ import {
   arrowRightIcon,
   chevronRight,
   discardIcon,
+  graphicIcon,
   insertIcon,
   refreshIcon,
   sendIcon,
@@ -95,7 +96,8 @@ export const CopilotView = defineComponent<CopilotViewProps>({
 
     const signalAbortRef = ref<AbortController>()
     const stoppingOutputRef = ref<boolean>(false)
-    const currentPromptRef = ref<string>('')
+    const currentSystemPromptRef = ref<string>('')
+    const currentUserPromptRef = ref<string>('')
     const mainContentRef = ref<string>('')
 
     const hasThinkingRef = ref<boolean>(false)
@@ -122,7 +124,15 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       dangerouslyAllowBrowser: true
     });
 
-    async function fetchAIHint(prompt: string) {
+    function isAsyncIterable(obj: any) {
+      return (
+        (obj !== null) 
+          && (typeof obj === "object") 
+          && (Symbol.asyncIterator in obj) && (typeof obj[Symbol.asyncIterator] === "function")
+      );
+    }
+
+    async function fetchAIHint(prompt: string, systemPrompt: string="") {
       copilotStatusRef.value = CopilotStatus.PENDING;
       hasThinkingRef.value = false;
       thinkingEndRef.value = false;
@@ -130,11 +140,12 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       renderThinking("");
       renderMainContent("");
 
+      currentUserPromptRef.value = prompt || '';
+      currentSystemPromptRef.value = systemPrompt || '';
+
       let signalAbort = signalAbortRef.value = new AbortController();
       stoppingOutputRef.value = false;
-      currentPromptRef.value = prompt;
 
-    
       let lastUpdateTime = 0;
       const THROTTLE_INTERVAL = 150; // 节流间隔
       // 创建一个节流更新函数
@@ -156,9 +167,13 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       const payload: any = {
         model: aiConfigs.model,
         messages: [{ role: "user", content: prompt }],
-        stream: true,
+        stream: false,
         signal: signalAbort
       };
+
+      if (systemPrompt && systemPrompt.trim().length > 0) {
+        payload.messages = [{ role: "system", content: systemPrompt }].concat(payload.messages);
+      }
     
       if (aiConfigs.temperature && aiConfigs.temperature > 0) {
         payload["temperature"] = aiConfigs.temperature;
@@ -174,73 +189,102 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       let mainText = '';
       let hasReasoning = false;
       let inThinking = false;
+
       try {
-        const newStream = await openAIClient.chat.completions.create(payload);
+        const newResponse = await openAIClient.chat.completions.create(payload);
         cleanTextarea();
-    
-        // 响应流式输出
-        for await (const chunk of newStream) {
-          copilotStatusRef.value = CopilotStatus.OUTPUTING;
-          if (stoppingOutputRef.value) {
-            break;
-          }
-    
-          const delta = chunk.choices[0]?.delta;
-    
-          let reasoningContent = delta?.reasoning_content || delta?.reasoning;
-          let content = delta?.content || '';
 
-          if (!hasReasoning && reasoningContent !== undefined) {
-            hasReasoning = true;
-          }
+        // 流式输出
+        if (isAsyncIterable(newResponse)) {
+          // 响应流式输出
+          for await (const chunk of newResponse) {
+            copilotStatusRef.value = CopilotStatus.OUTPUTING;
+            if (stoppingOutputRef.value) {
+              break;
+            }
+      
+            const delta = chunk.choices[0]?.delta;
+      
+            let reasoningContent = delta?.reasoning_content || delta?.reasoning;
+            let content = delta?.content || '';
 
-          if (!hasReasoning && !content) {
-            continue;
-          }
-    
-          // 碰到思考输出
-          // 处理 vllm 输出的 reasoning_content
-          // 处理 <think> 标签
-          if (hasReasoning || content.includes('<think>')) {
-            hasThinkingRef.value = true;
-            inThinking = true;
-            content = (reasoningContent || content).replace('<think>', '');
-          }
-          if (content.includes('</think>')) {
-            content = content.replace('</think>', '');
-            inThinking = false;
-            thinkingEndRef.value = true;
-            thinkingFoldedRef.value = true;
-          }
+            if (!hasReasoning && reasoningContent !== undefined) {
+              hasReasoning = true;
+            }
 
-          if (hasReasoning && inThinking && delta?.content) {
-            inThinking = false;
-            thinkingEndRef.value = true;
-            thinkingFoldedRef.value = true;
-          }
-
-          // 如果在思考块内
-          if (inThinking) {
-            if (content.length === 0) {
+            if (!hasReasoning && !content) {
               continue;
             }
-            // <think>后的第一个换行符忽略
-            if (content === '\n' && thinkingText.length == 0) {
+      
+            // 碰到思考输出
+            // 处理 vllm 输出的 reasoning_content
+            // 处理 <think> 标签
+            if (hasReasoning || content.includes('<think>')) {
+              hasThinkingRef.value = true;
+              inThinking = true;
+              content = (reasoningContent || content).replace('<think>', '');
+            }
+            if (content.includes('</think>')) {
+              content = content.replace('</think>', '');
+              inThinking = false;
+              thinkingEndRef.value = true;
+              thinkingFoldedRef.value = true;
+            }
+
+            if (hasReasoning && inThinking && delta?.content) {
+              inThinking = false;
+              thinkingEndRef.value = true;
+              thinkingFoldedRef.value = true;
+            }
+
+            // 如果在思考块内
+            if (inThinking) {
+              if (content.length === 0) {
+                continue;
+              }
+              // <think>后的第一个换行符忽略
+              if (content === '\n' && thinkingText.length == 0) {
+                continue;
+              }
+              content = content.replace(/\n+/g, '</p><p>');
+              thinkingText += content;
+              let tc = '<p>'+ thinkingText + '</p>';
+              throttledUpdate(tc, "", false);
               continue;
             }
-            content = content.replace(/\n+/g, '</p><p>');
-            thinkingText += content;
-            let tc = '<p>'+ thinkingText + '</p>';
-            throttledUpdate(tc, "", false);
-            continue;
+            
+            if (!inThinking) {
+              mainText += content;
+              if (mainText) {
+                throttledUpdate('', mainText, false);
+              }
+            }
           }
-          
-          if (!inThinking) {
-            mainText += content;
-          }
-          
-          if (mainText) {
-            throttledUpdate('', mainText, false);
+
+        }
+        // 非流式输出,直接响应: {choices:[{finish_reason: "stop", message:{role:"assistant", content:""}}]}
+        else if (newResponse.choices !== undefined) {
+          const choices = newResponse.choices;
+          if (choices.length > 0) {
+            let content = choices[0]?.message?.content;
+            if (typeof content === 'string') {
+              const thinkRegxp = /<think>([\s\S]*?)<\/think>/;
+              const matchedThink = content.match(thinkRegxp);
+              if (matchedThink != null && matchedThink.length > 1) {
+                hasThinkingRef.value = true;
+                thinkingEndRef.value = true;
+                thinkingFoldedRef.value = true;
+                thinkingText = matchedThink[1] || '';
+                content = content.replace(thinkRegxp, "");
+                throttledUpdate('<p>'+ thinkingText.replace(/\n+/g, '</p><p>') + '</p>', '', true);
+              }
+              mainText = content;
+              
+            } else {
+              copilotStatusRef.value = CopilotStatus.ERROR;
+              copilotErrorMsgRef.value = '不支持的大模型响应格式';
+              return;
+            }
           }
         }
     
@@ -261,9 +305,9 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       }
     
       // 确保最后一次更新一定会执行
-      throttledUpdate('', mainText, true);
-      mainContentRef.value = mainText;
       copilotStatusRef.value = CopilotStatus.FINISHED;
+      mainContentRef.value = mainText;
+      throttledUpdate('', mainText, true);
     }
 
     const foldThinking = () => {
@@ -277,9 +321,11 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         tcDiv.scrollTop = tcDiv.scrollHeight;
       }
     };
+
     const renderMainContent = (markdown: string) => {
       if (crepeEditorRef.value) {
         crepeEditorRef.value.action(replaceAll(markdown || ''));
+
         if (mainContentDivRef.value) {
           mainContentDivRef.value.scrollTop = mainContentDivRef.value?.scrollHeight;
         }
@@ -310,9 +356,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     }
 
     const reGenerate = () => {
-      const currentPrompt = currentPromptRef.value;
-      if (currentPrompt && currentPrompt.trim()) {
-        fetchAIHint(currentPrompt);
+      const currentUserPrompt = currentUserPromptRef.value;
+      const currentSystemPrompt = currentSystemPromptRef.value;
+      if (currentUserPrompt && currentUserPrompt.trim().length > 0) {
+        fetchAIHint(currentUserPrompt, currentSystemPrompt);
       }
     }
 
@@ -341,6 +388,18 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       prompt = prompt.replaceAll('{{lang}}', lang);
       prompt = prompt.replace('{{content}}', content);
       fetchAIHint(prompt);
+    }
+
+    const text2visuals = (_ctx: Ctx) => {
+      let content = selection || contextBefore;
+      if (!content) {
+        return;
+      }
+      let systemPrompt = aiConfigs.prompts[AIPromptsKey.Text2Visuals];
+      if (!systemPrompt) {
+        return;
+      }
+      fetchAIHint(content, systemPrompt);
     }
 
     const sendUserInputPrompt = () => {
@@ -436,6 +495,12 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         if (!dropdownMenuRef.value?.contains(targetEle as HTMLElement)) {
           toggleDropdownMenu(false);
         }
+      });
+      ['mousemove', 'pointermove'].forEach((evtName) => {
+        copilotViewDiv.addEventListener(evtName, (e: any) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
       });
 
       // 绑定输入框上的事件
@@ -576,6 +641,11 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                 dropdownMenuShouldShow?'shown':''
               )}>
                 <div class="dropdown-menu">
+                  <div class="dropdown-menu-item" onClick={onClick(text2visuals)}>
+                    <div class="menu-icon"><Icon icon={graphicIcon}/></div>
+                    <div class="menu-text">文生图表</div>
+                  </div>
+                  <div class="menu-divider"></div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
                     <div class="menu-icon"><Icon icon={aiIcon2}/></div>
                     <div class="menu-text">润色</div>

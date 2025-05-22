@@ -1,6 +1,6 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state"
 import { Ctx } from "@milkdown/kit/ctx"
-import type { MilkdownPlugin } from '@milkdown/kit/ctx'
+import type { Meta, MilkdownPlugin } from '@milkdown/kit/ctx'
 import { editorViewCtx, serializerCtx, parserCtx } from "@milkdown/kit/core"
 import { $prose } from "@milkdown/kit/utils"
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view"
@@ -14,13 +14,17 @@ const copilotKey = new PluginKey("MilkdownAICopilot");
 // 显示AI交互框
 export function showAiCopilot(ctx: Ctx) {
   const view = ctx.get(editorViewCtx);
-  const { state } = view;
+  const { state, editable } = view;
+  if (!editable) {
+    return;
+  }
+
   const tr = state.tr;
   const { from, to } = tr.selection;
   const slice = (from === to) ? tr.doc.slice(0, from) : tr.doc.slice(from, to);
   const doc = state.schema.topNodeType.create(null, slice.content);
   if (!doc) {
-    view.dispatch(tr.setMeta(copilotKey, {selection:'', contextBefore: '', show: true}));
+    view.dispatch(tr.setMeta(copilotKey, {selection:'', contextBefore: '', copilotShow: true}));
     return;
   }
 
@@ -30,7 +34,7 @@ export function showAiCopilot(ctx: Ctx) {
   view.dispatch(tr.setMeta(copilotKey, {
     selection: (from === to) ? '' : selectionText, 
     contextBefore: selectionText, 
-    show: true
+    copilotShow: true
   }));
 }
 
@@ -38,7 +42,7 @@ function hideHint(ctx: Ctx) {
   const view = ctx.get(editorViewCtx);
   const { state } = view;
   const tr = state.tr;
-  view.dispatch(tr.setMeta(copilotKey, {show: false}));
+  view.dispatch(tr.setMeta(copilotKey, {copilotShow: false}));
 }
 
 function applyHint(ctx: Ctx, content: string, insert: boolean = false) {
@@ -51,10 +55,10 @@ function applyHint(ctx: Ctx, content: string, insert: boolean = false) {
 
   if (insert) {
     // 在选区结束位置插入内容
-    view.dispatch(tr.setMeta(copilotKey, {show: false}).insert(tr.selection.to, slice.content));
+    view.dispatch(tr.setMeta(copilotKey, {copilotShow: false}).insert(tr.selection.to, slice.content));
   } else {
     // 替换选中内容
-    view.dispatch(tr.setMeta(copilotKey, {show: false}).replaceSelection(slice));
+    view.dispatch(tr.setMeta(copilotKey, {copilotShow: false}).replaceSelection(slice));
   }
 }
 
@@ -77,8 +81,8 @@ const copilotPlugin = $prose((ctx: Ctx) => {
        *  true - 该事件已经被“消费”或处理完毕，不需要再由 ProseMirror 的核心或其他监听器进行处理。
        *  false|void - 该事件未被处理，ProseMirror 执行其默认的行为。
        */
-      handleKeyDown(_view, evt: KeyboardEvent) {
-        if (!aiEnabled) {
+      handleKeyDown(view, evt: KeyboardEvent) {
+        if (!aiEnabled || !view.editable) {
           return false;
         }
 
@@ -127,7 +131,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
         
         const message = tr.getMeta(copilotKey);
         //console.log('>>> message: ', message);
-        if (!message || message.show === undefined) {
+        if (!message || message.copilotShow === undefined) {
           /*if (value.widget && tr.docChanged) {
             return {
               ...value,
@@ -138,7 +142,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
         }
 
         // 清除提示时清理
-        if (!message.show) {
+        if (!message.copilotShow) {
           shown = false;
           copilotViewApp && (copilotViewApp.unmount());
           copilotDiv = null;
@@ -163,7 +167,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
         copilotViewApp.mount(copilotDiv);
 
         const { to } = tr.selection;
-        const widget = Decoration.widget(to + 1, () => copilotDiv as HTMLElement)
+        const widget = Decoration.widget(to, () => copilotDiv as HTMLElement)
 
         return {
           deco: DecorationSet.create(state.doc, [widget]),
@@ -174,10 +178,23 @@ const copilotPlugin = $prose((ctx: Ctx) => {
   });
 });
 
-copilotPlugin.meta = {
-    package: '@milkdown/plugin-ai',
-    displayName: 'Prose<aiCopilot>',
+function withMeta<T extends MilkdownPlugin>(
+  plugin: T,
+  meta: Partial<Meta> & Pick<Meta, 'displayName'>
+): T {
+  Object.assign(plugin, {
+    meta: {
+      package: '@milkdown/plugin-ai',
+      ...meta,
+    },
+  })
+
+  return plugin
 }
 
+withMeta(copilotPlugin, {
+  displayName: 'Prose<aiCopilot>',
+})
+
 export * from "./config"
-export const aiPlugin: MilkdownPlugin[] = [copilotPlugin, aiConfig]
+export const aiPlugin: MilkdownPlugin[] = [copilotPlugin, aiConfig].flat()
