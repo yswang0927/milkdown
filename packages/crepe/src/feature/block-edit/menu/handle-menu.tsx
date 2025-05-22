@@ -47,6 +47,12 @@ type HandleMenuProps = {
   config?: BlockEditFeatureConfig
 }
 
+type HandleMenuItemsType = {
+    action: string
+    title: string
+    icon: any
+}[][];
+
 export const HandleMenuComponent = defineComponent<HandleMenuProps>({
   props: {
     ctx: {
@@ -70,7 +76,7 @@ export const HandleMenuComponent = defineComponent<HandleMenuProps>({
     const { ctx, hide, config } = props
     const host = ref<HTMLElement>()
 
-    const menuItems = [
+    const menuItems: HandleMenuItemsType = [
       [
         { "action": "h1", "title": config?.slashMenuH1Label ?? "一级标题", "icon": config?.slashMenuH1Icon ?? h1Icon },
         { "action": "h2", "title": config?.slashMenuH2Label ?? "二级标题", "icon": config?.slashMenuH2Icon ?? h2Icon },
@@ -88,6 +94,10 @@ export const HandleMenuComponent = defineComponent<HandleMenuProps>({
         { "action": "code", "title": config?.slashMenuCodeBlockLabel ?? "代码块", "icon": config?.slashMenuCodeBlockIcon ?? codeIcon }
       ]
     ];
+
+    /*watch([show], () => {
+      const isShown = show.value;
+    })*/
 
     const onClick = (fn: (ctx: Ctx) => void) => (e: MouseEvent) => {
       e.preventDefault()

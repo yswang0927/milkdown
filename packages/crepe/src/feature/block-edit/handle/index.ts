@@ -19,17 +19,20 @@ export class BlockHandleView implements PluginView {
   #provider: BlockProvider
   #app: App
   readonly #ctx: Ctx
+  // yswang
+  #positionObserver: MutationObserver
 
   constructor(ctx: Ctx, config?: BlockEditFeatureConfig) {
     this.#ctx = ctx
     const content = document.createElement('div')
     content.classList.add('milkdown-block-handle')
+
     const app = createApp(BlockHandle, {
       onAdd: this.onAdd,
       addIcon: config?.handleAddIcon ?? (() => plusIcon),
       handleIcon: config?.handleDragIcon ?? (() => menuIcon),
       // yswang
-      onHandle: this.onHandle,
+      onHandleClick: this.onHandleClick,
     })
     app.mount(content)
     this.#app = app
@@ -59,6 +62,23 @@ export class BlockHandleView implements PluginView {
       },
     })
     this.update()
+
+    // yswang 监听handle的位置是否发生变化,如果变化了,则自动隐藏handle-menu
+    this.#positionObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        // 属性变化，判断位置是否变化, 如果变化了,则自动隐藏handle-menu
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const ctx = this.#ctx
+          ctx.get(handleMenuAPI.key).hide();
+        }
+      }
+    });
+    this.#positionObserver.observe(content, {
+      attributes: true,
+      attributeOldValue: true,
+      attributeFilter: ['style']
+    });
+    
   }
 
   update = () => {
@@ -69,6 +89,8 @@ export class BlockHandleView implements PluginView {
     this.#provider.destroy()
     this.#content.remove()
     this.#app.unmount()
+    // yswang
+    this.#positionObserver.disconnect();
   }
 
   onAdd = () => {
@@ -90,8 +112,8 @@ export class BlockHandleView implements PluginView {
     ctx.get(menuAPI.key).show(tr.selection.from)
   }
 
-  onHandle = (trigger: any) => {
-    // yswang add
+  // yswang add
+  onHandleClick = (trigger: any) => {
     const ctx = this.#ctx
     ctx.get(handleMenuAPI.key).show(trigger)
   }

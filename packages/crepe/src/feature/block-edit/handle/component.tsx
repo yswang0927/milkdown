@@ -11,7 +11,7 @@ export interface BlockHandleProps {
   addIcon: IconType
   handleIcon: IconType
   // yswang
-  onHandle: (trigger: any) => void
+  onHandleClick: (trigger: any) => void
 }
 
 export const BlockHandle = defineComponent<BlockHandleProps>({
@@ -29,15 +29,17 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
       required: true,
     },
     // yswang
-    onHandle: {
+    onHandleClick: {
       type: Function,
       required: true,
     }
   },
-  setup(props) {
+  setup({ onAdd, addIcon, handleIcon, onHandleClick }) {
     const addButton = ref<HTMLDivElement>()
     // yswang
     const handleButton = ref<HTMLDivElement>()
+
+    const handleIsDragTimeRef = ref<number>(0)
 
     return () => {
       return (
@@ -54,25 +56,27 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
               e.preventDefault()
               e.stopPropagation()
               addButton.value?.classList.remove('active')
-              props.onAdd()
+              onAdd()
             }}
           >
-            <Icon icon={props.addIcon()} />
+            <Icon icon={addIcon()} />
           </div>
           <div 
             class="operation-item"
             ref={handleButton}
             onPointerdown={(e) => {
-              e.stopPropagation()
-              handleButton.value?.classList.add('active')
+              handleButton.value?.classList.add('active');
+              handleIsDragTimeRef.value = Date.now();
             }}
             onPointerup={(e) => {
-              e.stopPropagation()
-              handleButton.value?.classList.remove('active')
-              props.onHandle(handleButton.value)
+              //e.stopPropagation();
+              handleButton.value?.classList.remove('active');
+              if (Date.now() - handleIsDragTimeRef.value < 500) {
+                onHandleClick(handleButton.value);
+              }
             }}
           >
-            <Icon icon={props.handleIcon()} />
+            <Icon icon={handleIcon()} />
           </div>
         </>
       )
