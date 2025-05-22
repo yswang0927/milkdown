@@ -75,6 +75,9 @@ export class MarkdownEditor {
       root: this.container,
       defaultValue: this.options.defaultValue || '',
       featureConfigs: {
+        [Crepe.Feature.Cursor]: {
+          virtual: false
+        },
         [Crepe.Feature.CodeMirror]: {
           noResultText: '无结果',
           searchPlaceholder: '搜索语言',

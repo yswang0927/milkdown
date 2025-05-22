@@ -25,10 +25,12 @@ export const defineFeature: DefineFeature<CursorFeatureConfig> = (
     })
     .use(cursor)
 
-  if (config?.virtual === false) {
+  // yswang注释掉,采用 === true 判断
+  /*if (config?.virtual === false) {
     return
+  }*/
+  if (config?.virtual === true) {
+    const virtualCursor = createVirtualCursor()
+    editor.use($prose(() => virtualCursor))
   }
-
-  const virtualCursor = createVirtualCursor()
-  editor.use($prose(() => virtualCursor))
 }

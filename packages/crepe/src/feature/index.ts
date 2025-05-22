@@ -45,8 +45,7 @@ export interface CrepeFeatureConfig {
 }
 
 export const defaultFeatures: Record<CrepeFeature, boolean> = {
-  // yswang 修改 Cursor 为: false, 否则AI-copilot无法获取光标焦点
-  [CrepeFeature.Cursor]: false,
+  [CrepeFeature.Cursor]: true,
   [CrepeFeature.ListItem]: true,
   [CrepeFeature.LinkTooltip]: true,
   [CrepeFeature.ImageBlock]: true,
