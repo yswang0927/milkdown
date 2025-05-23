@@ -216,6 +216,12 @@
     height: 18px;
 }
 
+.milkdown .milkdown-table-block th, 
+.milkdown .milkdown-table-block td {
+    border-color: #ccc;
+}
+        
+
 .milkdown .milkdown-mermaid-preview-panel p {
     padding: 0;
     margin: 0;
