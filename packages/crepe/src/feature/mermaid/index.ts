@@ -53,8 +53,24 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
     .use(blockMermaidSchema)
 }
 
+function uuid() {
+  let timestamp = new Date().getTime();
+  let perforNow = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    let random = Math.random() * 16;
+    if (timestamp > 0) {
+      random = (timestamp + random) % 16 | 0;
+      timestamp = Math.floor(timestamp / 16);
+    } else {
+      random = (perforNow + random) % 16 | 0;
+      perforNow = Math.floor(perforNow / 16);
+    }
+    return (c === 'x' ? random : (random & 0x3) | 0x8).toString(16);
+  });
+}
+
 function renderMermaid(content: string) {
-  const graphId = 'mermaid'+ Date.now();
+  const graphId = 'mermaid-'+ uuid();
   let dom = document.createElement('div');
   dom.className = 'milkdown-mermaid-preview-panel';
   dom.id = graphId;
@@ -65,7 +81,8 @@ function renderMermaid(content: string) {
         const ele = document.querySelector('#'+ divId);
         ele && (ele.innerHTML = `<div style='color:red;'><div>Mermaid语法错误: </div><div>${err}</div></div>`);
       };
-      const svgId = 'graph_'+ divId;
+
+      const svgId = 'graph-'+ divId;
       mermaid.render(svgId, content).then((output: any) => {
         let time = Date.now();
         let ele;
@@ -76,6 +93,7 @@ function renderMermaid(content: string) {
           }
         }
         ele && (ele.innerHTML = output.svg);
+        
         // 绑定zoom-pan能力
         const svgImg = document.querySelector('#'+ svgId);
         svgImg && panzoom(svgImg as HTMLElement, {
