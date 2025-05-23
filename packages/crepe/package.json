@@ -70,6 +70,7 @@
     "katex": "^0.16.0",
     "mermaid": "^11.6.0",
     "nanoid": "^5.0.9",
+    "panzoom": "^9.4.3",
     "prosemirror-virtual-cursor": "^0.4.2",
     "remark-math": "^6.0.0",
     "tslib": "^2.8.1",

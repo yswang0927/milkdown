@@ -41,6 +41,44 @@
     padding: 0;
     margin-bottom: 7px;
 }
+.milkdown .ProseMirror >:first-child {
+    margin-top: 0 !important;
+}
+.milkdown .ProseMirror h1,
+.milkdown .ProseMirror h2,
+.milkdown .ProseMirror h3,
+.milkdown .ProseMirror h4,
+.milkdown .ProseMirror h5,
+.milkdown .ProseMirror h6 {
+    margin-top: 1em;
+    margin-bottom: 0.8em;
+    line-height: 1.25;
+    font-weight: 600;
+}
+.milkdown .ProseMirror h1 {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+}
+.milkdown .ProseMirror h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+}
+.milkdown .ProseMirror h3 {
+    font-size: 1.25em;
+}
+.milkdown .ProseMirror h4 {
+    font-size: 1em;
+}
+.milkdown .ProseMirror h5 {
+    font-size: .875em;
+}
+.milkdown .ProseMirror h6 {
+    font-size: .85em;
+    color: var(--crepe-color-outline);
+}
+.milkdown .ProseMirror hr {
+    background-color: var(--crepe-color-selected)
+}
 
 .milkdown .crepe-placeholder::before {
     font-size: 14px;

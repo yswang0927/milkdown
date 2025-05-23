@@ -33,9 +33,10 @@ import {
   thinkingIcon,
   translationIcon,
   warnIcon,
-  writerIcon1,
-  writerIcon3,
-  writerIcon5,
+  writingExpansionIcon,
+  writingSummarizeIcon,
+  writingContinueIcon,
+  writingSimplyIcon,
 } from './icons'
 
 
@@ -132,7 +133,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       );
     }
 
-    async function fetchAIHint(prompt: string, systemPrompt: string="") {
+    async function fetchAIHint(userPrompt: string, systemPrompt: string="") {
       copilotStatusRef.value = CopilotStatus.PENDING;
       hasThinkingRef.value = false;
       thinkingEndRef.value = false;
@@ -140,7 +141,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       renderThinking("");
       renderMainContent("");
 
-      currentUserPromptRef.value = prompt || '';
+      currentUserPromptRef.value = userPrompt || '';
       currentSystemPromptRef.value = systemPrompt || '';
 
       let signalAbort = signalAbortRef.value = new AbortController();
@@ -166,13 +167,13 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     
       const payload: any = {
         model: aiConfigs.model,
-        messages: [{ role: "user", content: prompt }],
+        messages: [{ "role": "user", "content": userPrompt }],
         stream: true,
         signal: signalAbort
       };
 
       if (systemPrompt && systemPrompt.trim().length > 0) {
-        payload.messages = [{ role: "system", content: systemPrompt }].concat(payload.messages);
+        payload.messages = [{ "role": "system", "content": systemPrompt }].concat(payload.messages);
       }
     
       if (aiConfigs.temperature && aiConfigs.temperature > 0) {
@@ -387,12 +388,11 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       if (!content) {
         return;
       }
-      let prompt = aiConfigs.prompts['article:'+ type];
-      if (!prompt) {
+      let systemPrompt = aiConfigs.prompts['article:'+ type];
+      if (!systemPrompt) {
         return;
       }
-      prompt = prompt.replace('{{content}}', content);
-      fetchAIHint(prompt);
+      fetchAIHint(content, systemPrompt);
     }
 
     const translate = (_ctx: Ctx, lang: string) => {
@@ -670,15 +670,19 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                     <div class="menu-text">润色</div>
                   </div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'expansion'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon1}/></div>
+                    <div class="menu-icon"><Icon icon={writingExpansionIcon}/></div>
                     <div class="menu-text">扩写</div>
                   </div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'continue'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon5}/></div>
+                    <div class="menu-icon"><Icon icon={writingContinueIcon}/></div>
                     <div class="menu-text">续写</div>
                   </div>
+                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'simply'))}>
+                    <div class="menu-icon"><Icon icon={writingSimplyIcon}/></div>
+                    <div class="menu-text">缩写</div>
+                  </div>
                   <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'summarize'))}>
-                    <div class="menu-icon"><Icon icon={writerIcon3}/></div>
+                    <div class="menu-icon"><Icon icon={writingSummarizeIcon}/></div>
                     <div class="menu-text">总结</div>
                   </div>
                   <div class="menu-divider"></div>

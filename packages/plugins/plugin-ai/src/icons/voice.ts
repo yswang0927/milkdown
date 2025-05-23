@@ -1,0 +1,3 @@
+export const voiceIcon = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="none" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 2.5A2.5 2.5 0 0 1 14.5 5v6a2.5 2.5 0 0 1-5 0V5A2.5 2.5 0 0 1 12 2.5M7.5 5a4.5 4.5 0 0 1 9 0v6a4.5 4.5 0 1 1-9 0zm-2 4a1 1 0 0 0-2 0v2c0 4.213 3.26 7.928 7.5 8.44V21H7.3a1 1 0 1 0 0 2h9.4a1 1 0 1 0 0-2H13v-1.56c4.24-.512 7.5-4.227 7.5-8.44V9a1 1 0 1 0-2 0v2c0 3.46-2.915 6.5-6.5 6.5S5.5 14.46 5.5 11z" clip-rule="evenodd"></path></svg>
+`

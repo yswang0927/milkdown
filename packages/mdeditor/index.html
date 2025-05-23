@@ -201,7 +201,7 @@
                     a.href = `#${item.id}`;
                     a.title = item.text;
                     a.dataset.level = item.level;
-                    a.style.marginLeft = `${(item.level-1) * 16}px`;
+                    a.style.marginLeft = `${(item.level-1)}em`;
                     a.innerText = item.text;
                     toc.appendChild(a);
                 });

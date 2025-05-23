@@ -9,6 +9,7 @@ import { remarkMermaidBlockPlugin } from './remark'
 
 import type { MermaidConfig } from 'mermaid'
 import mermaid from 'mermaid'
+import panzoom from 'panzoom'
 
 
 /*export interface MermaidOptionsConfig {
@@ -64,8 +65,8 @@ function renderMermaid(content: string) {
         const ele = document.querySelector('#'+ divId);
         ele && (ele.innerHTML = `<div style='color:red;'><div>Mermaid语法错误: </div><div>${err}</div></div>`);
       };
-      
-      mermaid.render('graph_'+ divId, content).then((output: any) => {
+      const svgId = 'graph_'+ divId;
+      mermaid.render(svgId, content).then((output: any) => {
         let time = Date.now();
         let ele;
         while (!(ele = document.querySelector('#'+ divId))) {
@@ -75,6 +76,12 @@ function renderMermaid(content: string) {
           }
         }
         ele && (ele.innerHTML = output.svg);
+        // 绑定zoom-pan能力
+        const svgImg = document.querySelector('#'+ svgId);
+        svgImg && panzoom(svgImg as HTMLElement, {
+          maxZoom: 10,
+          minZoom: 0.1
+        });
       });
     } catch (e) {
       console.error(e);
