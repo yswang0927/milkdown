@@ -205,6 +205,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       
             const delta = chunk.choices[0]?.delta;
       
+            // 处理 vllm 输出的 reasoning_content
             let reasoningContent = delta?.reasoning_content || delta?.reasoning;
             let content = delta?.content || '';
 
@@ -217,7 +218,6 @@ export const CopilotView = defineComponent<CopilotViewProps>({
             }
       
             // 碰到思考输出
-            // 处理 vllm 输出的 reasoning_content
             // 处理 <think> 标签
             if (hasReasoning || content.includes('<think>')) {
               hasThinkingRef.value = true;
@@ -243,17 +243,24 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                 continue;
               }
               // <think>后的第一个换行符忽略
-              if (content === '\n' && thinkingText.length == 0) {
+              if (content === '\n' && thinkingText.length === 0) {
                 continue;
               }
               content = content.replace(/\n+/g, '</p><p>');
               thinkingText += content;
               let tc = '<p>'+ thinkingText + '</p>';
-              throttledUpdate(tc, "", false);
+              throttledUpdate(tc, '', false);
               continue;
             }
             
             if (!inThinking) {
+              // 更新前面最后一次的think
+              if (thinkingText.length > 0) {
+                throttledUpdate('<p>'+ thinkingText + '</p>', '', true);
+                thinkingText = '';
+              }
+
+              // 累加主内容
               mainText += content;
               if (mainText) {
                 throttledUpdate('', mainText, false);
@@ -262,22 +269,34 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           }
 
         }
-        // 非流式输出,直接响应: {choices:[{finish_reason: "stop", message:{role:"assistant", content:""}}]}
+        // 非流式输出,直接响应: {choices:[{finish_reason: "stop", message:{role:"assistant", content:"", [reasoning_content:""]}}]}
         else if (newResponse.choices !== undefined) {
           const choices = newResponse.choices;
           if (choices.length > 0) {
             let content = choices[0]?.message?.content;
+            let reasoningContent = choices[0]?.message?.reasoning_content || choices[0]?.message?.reasoning;
             if (typeof content === 'string') {
-              const thinkRegxp = /<think>([\s\S]*?)<\/think>/;
-              const matchedThink = content.match(thinkRegxp);
-              if (matchedThink != null && matchedThink.length > 1) {
+              if (reasoningContent !== undefined) {
                 hasThinkingRef.value = true;
                 thinkingEndRef.value = true;
                 thinkingFoldedRef.value = true;
-                thinkingText = matchedThink[1] || '';
-                content = content.replace(thinkRegxp, "");
+                thinkingText = reasoningContent || '';
+              }
+              else {
+                const thinkRegxp = /<think>([\s\S]*?)<\/think>/;
+                const matchedThink = content.match(thinkRegxp);
+                if (matchedThink != null && matchedThink.length > 1) {
+                  hasThinkingRef.value = true;
+                  thinkingEndRef.value = true;
+                  thinkingFoldedRef.value = true;
+                  thinkingText = matchedThink[1] || '';
+                  content = content.replace(thinkRegxp, "");
+                }
+              }
+              if (hasThinkingRef.value && thinkingText) {
                 throttledUpdate('<p>'+ thinkingText.replace(/\n+/g, '</p><p>') + '</p>', '', true);
               }
+
               mainText = content;
               
             } else {
@@ -305,9 +324,9 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       }
     
       // 确保最后一次更新一定会执行
+      throttledUpdate('', mainText, true);
       copilotStatusRef.value = CopilotStatus.FINISHED;
       mainContentRef.value = mainText;
-      throttledUpdate('', mainText, true);
     }
 
     const foldThinking = () => {
