@@ -38,3 +38,8 @@ export * from './functions'
 // yswang
 export * from './graph'
 export * from './ai'
+export * from './zoomin'
+export * from './zoomout'
+export * from './fullscreen'
+export * from './download'
+export * from './fit-viewport'
