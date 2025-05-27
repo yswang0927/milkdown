@@ -1,0 +1,15 @@
+.milkdown .ProseMirror *::selection {
+    background: rgba(251, 179, 96, 0.5);
+}
+
+.milkdown .ProseMirror .ProseMirror-selectednode,
+.milkdown .ProseMirror:not(.ProseMirror-hideselection) .ProseMirror-selection-mark {
+    background: rgba(251, 179, 96, 0.5);
+    border-radius: 2px;
+    outline: none;
+}
+
+.milkdown .ProseMirror.ProseMirror-hideselection .ProseMirror-selection-mark,
+.milkdown .ProseMirror .ProseMirror-selectednode .ProseMirror-selection-mark {
+    background-color: transparent !important;
+}

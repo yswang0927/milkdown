@@ -1,0 +1,41 @@
+{
+  "name": "@milkdown/plugin-selectionmark",
+  "description": "A Milkdown plugin for selection mark.",
+  "type": "module",
+  "version": "7.11.0",
+  "license": "MIT",
+  "keywords": [
+    "milkdown",
+    "milkdown plugin"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    },
+    "./style.css": "./src/style.css"
+  },
+  "main": "./src/index.ts",
+  "publishConfig": {
+    "main": "./lib/index.es.js",
+    "types": "./lib/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./lib/index.es.js",
+        "types": "./lib/index.d.ts"
+      },
+      "./style.css": "./lib/style.css"
+    }
+  },
+  "files": [
+    "lib",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@milkdown/kit": "workspace:*",
+    "tslib": "^2.8.1"
+  }
+}
