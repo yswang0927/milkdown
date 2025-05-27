@@ -701,55 +701,53 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                 'milkdown-copilot-dropdown', 
                 dropdownMenuShouldShow?'shown':''
               )}>
-                <div class="dropdown-menu">
-                  <div class="dropdown-menu-item" onClick={onClick(text2visuals)}>
-                    <div class="menu-icon"><Icon icon={graphicIcon}/></div>
-                    <div class="menu-text">文生图表</div>
+                <div class="milkdown-dropdown-menu">
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick(text2visuals)}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={graphicIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">文生图表</span>
                   </div>
-                  <div class="menu-divider"></div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
-                    <div class="menu-icon"><Icon icon={aiIcon2}/></div>
-                    <div class="menu-text">润色</div>
+                  <div class="milkdown-dropdown-menu-divider"></div>
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'polishing'))}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={aiIcon2}/></span>
+                    <span class="milkdown-dropdown-menu-text">润色</span>
                   </div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'expansion'))}>
-                    <div class="menu-icon"><Icon icon={writingExpansionIcon}/></div>
-                    <div class="menu-text">扩写</div>
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'expansion'))}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={writingExpansionIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">扩写</span>
                   </div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'continue'))}>
-                    <div class="menu-icon"><Icon icon={writingContinueIcon}/></div>
-                    <div class="menu-text">续写</div>
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'continue'))}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={writingContinueIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">续写</span>
                   </div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'simply'))}>
-                    <div class="menu-icon"><Icon icon={writingSimplyIcon}/></div>
-                    <div class="menu-text">缩写</div>
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'simply'))}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={writingSimplyIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">缩写</span>
                   </div>
-                  <div class="dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'summarize'))}>
-                    <div class="menu-icon"><Icon icon={writingSummarizeIcon}/></div>
-                    <div class="menu-text">总结</div>
+                  <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => writing(ctx, 'summarize'))}>
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={writingSummarizeIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">总结</span>
                   </div>
-                  <div class="menu-divider"></div>
-                  <div class="dropdown-menu-item submenu">
-                    <div class="menu-icon"><Icon icon={translationIcon}/></div>
-                    <div class="menu-text">翻译</div>
-                    <div class="submenu-icon"><Icon icon={chevronRight}/></div>
-                    <div class="milkdown-copilot-dropdown">
-                      <div class="dropdown-menu">
-                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'english'))}>
-                          <div class="menu-icon">🇬🇧</div>
-                          <div class="menu-text">英文</div>
-                        </div>
-                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'chinese'))}>
-                          <div class="menu-icon">🇨🇳</div>
-                          <div class="menu-text">简体中文</div>
-                        </div>
-                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'japanese'))}>
-                          <div class="menu-icon">🇯🇵</div>
-                          <div class="menu-text">日文</div>
-                        </div>
-                        <div class="dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'korean'))}>
-                          <div class="menu-icon">🇰🇷</div>
-                          <div class="menu-text">韩文</div>
-                        </div>
+                  <div class="milkdown-dropdown-menu-divider"></div>
+                  <div class="milkdown-dropdown-menu-item milkdown-dropdown-submenu">
+                    <span class="milkdown-dropdown-menu-icon"><Icon icon={translationIcon}/></span>
+                    <span class="milkdown-dropdown-menu-text">翻译</span>
+                    <div class="milkdown-dropdown-submenu-icon"><Icon icon={chevronRight}/></div>
+                    <div class="milkdown-dropdown-menu">
+                      <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'english'))}>
+                        <span class="milkdown-dropdown-menu-icon">🇬🇧</span>
+                        <span class="milkdown-dropdown-menu-text">英文</span>
+                      </div>
+                      <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'chinese'))}>
+                        <span class="milkdown-dropdown-menu-icon">🇨🇳</span>
+                        <span class="milkdown-dropdown-menu-text">简体中文</span>
+                      </div>
+                      <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'japanese'))}>
+                        <span class="milkdown-dropdown-menu-icon">🇯🇵</span>
+                        <span class="milkdown-dropdown-menu-text">日文</span>
+                      </div>
+                      <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'korean'))}>
+                        <span class="milkdown-dropdown-menu-icon">🇰🇷</span>
+                        <span class="milkdown-dropdown-menu-text">韩文</span>
                       </div>
                     </div>
                   </div>
