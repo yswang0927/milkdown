@@ -201,8 +201,8 @@ function renderMermaid(content: string) {
 
         // 绑定zoom-pan能力
         const svgViewBox = svgImg.getAttribute('viewBox')?.split(' ').map(Number) || [];
-        const svgWidth = Math.round(svgViewBox[2] || svgImg.clientWidth || svgImg.getBoundingClientRect().width);
-        const svgHeight = Math.round(svgViewBox[3] || svgImg.clientHeight || svgImg.getBoundingClientRect().height);
+        const svgWidth = Math.round(svgViewBox[2] || svgImg.clientWidth || svgImg.getBoundingClientRect().width) + 10;
+        const svgHeight = Math.round(svgViewBox[3] || svgImg.clientHeight || svgImg.getBoundingClientRect().height) + 10;
         previewPanel.style.height = previewPanel.dataset.height = Math.round(svgHeight + 20) + 'px';
         svgPanel.style.width = svgWidth + 'px';
         svgPanel.style.height = svgHeight + 'px';

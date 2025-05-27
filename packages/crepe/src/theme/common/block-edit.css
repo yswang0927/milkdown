@@ -338,7 +338,7 @@
     display: none;
     position: absolute;
     left: 50%;
-    bottom: 100%;
+    top: 100%;
     transform: translateX(-50%);
   }
   .milkdown-mermaid-toolbar .toolbar-item:hover .milkdown-dropdown-menu {
