@@ -191,6 +191,7 @@
     max-height: 200px;
     overflow-y: auto;
     display: none;
+    overflow-anchor: auto;
 }
 .milkdown-copilot-thinking-content > p {
     margin: 1em 0;

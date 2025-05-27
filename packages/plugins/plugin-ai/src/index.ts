@@ -19,6 +19,15 @@ export function showAiCopilot(ctx: Ctx) {
     return;
   }
 
+  /*const { tr, selection, doc } = state;
+  let selectionText = doc.textBetween(selection.from, selection.to);
+  let contextBefore = (selection.from === selection.to) ? doc.textBetween(0, selection.from) : '';
+  view.dispatch(tr.setMeta(copilotKey, {
+    selection: selectionText, 
+    contextBefore: contextBefore, 
+    copilotShow: true
+  }));*/
+
   const tr = state.tr;
   const { from, to } = tr.selection;
   const slice = (from === to) ? tr.doc.slice(0, from) : tr.doc.slice(from, to);
@@ -76,6 +85,16 @@ const copilotPlugin = $prose((ctx: Ctx) => {
   return new Plugin({
     key: copilotKey,
     props: {
+      decorations(state) {
+        if (!state) {
+          return null;
+        }
+        const stateValue = copilotKey.getState(state);
+        if (stateValue) {
+          return stateValue.deco;
+        }
+        return null;
+      },
       /**
        * @returns 
        *  true - 该事件已经被“消费”或处理完毕，不需要再由 ProseMirror 的核心或其他监听器进行处理。
@@ -112,10 +131,7 @@ const copilotPlugin = $prose((ctx: Ctx) => {
           shown && hideHint(ctx);
           return false;
         }
-      },
-      decorations(state) {
-        return copilotKey.getState(state).deco;
-      },
+      }
     },
     state: {
       init() {

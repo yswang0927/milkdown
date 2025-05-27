@@ -10,6 +10,7 @@ import {
   h,
   Fragment,
   onMounted,
+  type Ref
 } from 'vue'
 import DOMPurify from 'dompurify'
 import { computePosition, flip, offset, shift } from '@floating-ui/dom'
@@ -90,6 +91,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
 
     const copilotViewDivRef = ref<HTMLElement>()
     const mainContentDivRef = ref<HTMLElement>()
+    const mainAutoScrollingRef = ref<boolean>(true)
     const crepeEditorRef = ref<any>()
     const promptInputWrapRef = ref<HTMLElement>()
     const promptInputRef = ref<HTMLTextAreaElement>()
@@ -104,6 +106,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const hasThinkingRef = ref<boolean>(false)
     const thinkingFoldedRef = ref<boolean>(false)
     const thinkingEndRef = ref<boolean>(false)
+    const thinkingAutoScrollingRef = ref<boolean>(true)
     const thinkingContentDivRef = ref<HTMLElement>()
 
     const copilotStatusRef = ref<CopilotStatus>(CopilotStatus.INIT)
@@ -138,6 +141,8 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       hasThinkingRef.value = false;
       thinkingEndRef.value = false;
       thinkingFoldedRef.value = false;
+      thinkingAutoScrollingRef.value = true;
+      mainAutoScrollingRef.value = true;
       renderThinking("");
       renderMainContent("");
 
@@ -333,21 +338,33 @@ export const CopilotView = defineComponent<CopilotViewProps>({
     const foldThinking = () => {
       thinkingFoldedRef.value = !thinkingFoldedRef.value;
     }
+    
+    const scrollToBottom = (container: HTMLElement) => {
+      if (container) {
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+          //container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        });
+      }
+    };
 
     const renderThinking = (content: string) => {
       const tcDiv = thinkingContentDivRef.value;
       if (tcDiv) {
         tcDiv.innerHTML = DOMPurify.sanitize(content);
-        tcDiv.scrollTop = tcDiv.scrollHeight;
+        if (thinkingAutoScrollingRef.value) {
+          scrollToBottom(tcDiv);
+        }
       }
     };
 
     const renderMainContent = (markdown: string) => {
-      if (crepeEditorRef.value) {
+      const mainDiv = mainContentDivRef.value;
+      if (mainDiv && crepeEditorRef.value) {
         crepeEditorRef.value.action(replaceAll(markdown || ''));
 
-        if (mainContentDivRef.value) {
-          mainContentDivRef.value.scrollTop = mainContentDivRef.value?.scrollHeight;
+        if (mainAutoScrollingRef.value) {
+          scrollToBottom(mainDiv);
         }
       }
     }
@@ -406,7 +423,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
       }
       prompt = prompt.replaceAll('{{lang}}', lang);
       prompt = prompt.replace('{{content}}', content);
-      fetchAIHint(prompt);
+      fetchAIHint(prompt, "");
     }
 
     const text2visuals = (_ctx: Ctx) => {
@@ -556,6 +573,31 @@ export const CopilotView = defineComponent<CopilotViewProps>({
           textarea.focus();
         }, 200);
         
+      }
+
+      // 支持用户自由滚动
+      const anchorUserScrolling = (scrollArea: HTMLElement, autoScrollingRef: Ref) => {
+        scrollArea.addEventListener('scroll', () => {
+          const isAtBottom = scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight <= 10;
+          // 用户向上滚动了 -> 停止自动滚动
+          if (autoScrollingRef.value && !isAtBottom) {
+            autoScrollingRef.value = false;
+          } 
+          // 如果用户又回到了底部，可以重新开启自动滚动（可选）
+          else if (!autoScrollingRef.value && isAtBottom) {
+            autoScrollingRef.value = true;
+            scrollToBottom(scrollArea);
+          }
+        });
+      };
+
+      const thinkingDiv = thinkingContentDivRef.value;
+      if (thinkingDiv) {
+        anchorUserScrolling(thinkingDiv, thinkingAutoScrollingRef);
+      }
+      const mainDiv = mainContentDivRef.value;
+      if (mainDiv) {
+        anchorUserScrolling(mainDiv, mainAutoScrollingRef);
       }
 
     })
