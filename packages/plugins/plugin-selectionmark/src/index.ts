@@ -1,5 +1,5 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state"
-import type { Meta, MilkdownPlugin } from '@milkdown/kit/ctx'
+import type { MilkdownPlugin } from '@milkdown/kit/ctx'
 import { $prose } from "@milkdown/kit/utils"
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view"
 
@@ -85,22 +85,9 @@ const selectionMarkDecoration = $prose(() => {
 
 });
 
-function withMeta<T extends MilkdownPlugin>(
-  plugin: T,
-  meta: Partial<Meta> & Pick<Meta, 'displayName'>
-): T {
-  Object.assign(plugin, {
-    meta: {
-      package: '@milkdown/plugin-selectionmark',
-      ...meta,
-    },
-  })
-
-  return plugin
-}
-
-withMeta(selectionMarkDecoration, {
-  displayName: 'Prose<selectionMarkPlugin>',
-})
+selectionMarkDecoration.meta = {
+  package: '@milkdown/plugin-selectionmark',
+  displayName: 'Prose<selectionMarkPlugin>'
+};
 
 export const selectionMarkPlugin: MilkdownPlugin[] = [selectionMarkDecoration].flat()

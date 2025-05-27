@@ -1,6 +1,6 @@
 import { Plugin, PluginKey } from "@milkdown/kit/prose/state"
 import { Ctx } from "@milkdown/kit/ctx"
-import type { Meta, MilkdownPlugin } from '@milkdown/kit/ctx'
+import type { MilkdownPlugin } from '@milkdown/kit/ctx'
 import { editorViewCtx, serializerCtx, parserCtx } from "@milkdown/kit/core"
 import { $prose } from "@milkdown/kit/utils"
 import { Decoration, DecorationSet } from "@milkdown/kit/prose/view"
@@ -194,23 +194,10 @@ const copilotPlugin = $prose((ctx: Ctx) => {
   });
 });
 
-function withMeta<T extends MilkdownPlugin>(
-  plugin: T,
-  meta: Partial<Meta> & Pick<Meta, 'displayName'>
-): T {
-  Object.assign(plugin, {
-    meta: {
-      package: '@milkdown/plugin-ai',
-      ...meta,
-    },
-  })
-
-  return plugin
-}
-
-withMeta(copilotPlugin, {
-  displayName: 'Prose<aiCopilot>',
-})
+copilotPlugin.meta = {
+  package: '@milkdown/plugin-ai',
+  displayName: 'Prose<aiCopilot>'
+};
 
 export * from "./config"
 export const aiPlugin: MilkdownPlugin[] = [copilotPlugin, aiConfig].flat()
