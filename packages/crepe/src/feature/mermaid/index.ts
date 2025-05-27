@@ -9,14 +9,33 @@ import { remarkMermaidBlockPlugin } from './remark'
 
 import type { MermaidConfig } from 'mermaid'
 import mermaid from 'mermaid'
-import panzoom from 'panzoom'
 
 import {
   zoomInIcon,
   zoomOutIcon,
   fullscreenIcon,
+  fitViewportIcon,
   downloadIcon,
 } from '../../icons'
+
+import { PanZoom } from '../../utils/panzoom'
+
+
+function uuid() {
+  let timestamp = new Date().getTime();
+  let perforNow = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0;
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    let random = Math.random() * 16;
+    if (timestamp > 0) {
+      random = (timestamp + random) % 16 | 0;
+      timestamp = Math.floor(timestamp / 16);
+    } else {
+      random = (perforNow + random) % 16 | 0;
+      perforNow = Math.floor(perforNow / 16);
+    }
+    return (c === 'x' ? random : (random & 0x3) | 0x8).toString(16);
+  });
+}
 
 /*export interface MermaidOptionsConfig {
   mermaidOptions: MermaidConfig
@@ -62,25 +81,10 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
     .use(blockMermaidSchema)
 }
 
-function uuid() {
-  let timestamp = new Date().getTime();
-  let perforNow = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0;
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    let random = Math.random() * 16;
-    if (timestamp > 0) {
-      random = (timestamp + random) % 16 | 0;
-      timestamp = Math.floor(timestamp / 16);
-    } else {
-      random = (perforNow + random) % 16 | 0;
-      perforNow = Math.floor(perforNow / 16);
-    }
-    return (c === 'x' ? random : (random & 0x3) | 0x8).toString(16);
-  });
-}
 
-function downloadSvg(svgCode: string, type: string) {
+function downloadSvg(svgCode: string, format: string) {
   const namePrefix = `mermaid-diagram-${new Date().toISOString().replace(/-/g, "").slice(0, 8)}`;
-  if ('png' === type) {
+  if ('png' === format) {
     //const svgString = new XMLSerializer().serializeToString(svgElement);
     let svgEle;
     try {
@@ -97,30 +101,31 @@ function downloadSvg(svgCode: string, type: string) {
     const svgW = svgEle.viewBox.baseVal.width, 
           svgH = svgEle.viewBox.baseVal.height;
     
-    const svgCanvas = document.createElement("canvas");
-    svgCanvas.width = 3 * svgW,
-    svgCanvas.height = 3 * svgH,
-    svgCanvas.style.width = svgW + 'px',
-    svgCanvas.style.height = svgH + 'px';
-    let svgCtx2d = svgCanvas.getContext("2d");
-    if (!svgCtx2d) {
+    const canvas = document.createElement("canvas");
+    canvas.width = 3 * svgW,
+    canvas.height = 3 * svgH,
+    canvas.style.width = svgW + 'px',
+    canvas.style.height = svgH + 'px';
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
       console.error('no svg-convas-context2d');
       return;
     }
-    svgCtx2d.fillStyle = "#fff";
-    svgCtx2d.fillRect(0, 0, svgCanvas.width, svgCanvas.height);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const img = new Image();
+    img.crossOrigin = 'anonymous';
     img.addEventListener('load', () => {
-      svgCtx2d.drawImage(img, 0, 0, svgCanvas.width, svgCanvas.height);
-      svgCanvas.toBlob((d) => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((d) => {
         if (!d) {
           return;
         }
         const url = URL.createObjectURL(d);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `mermaid-diagram-${new Date().toISOString().replace(/-/g, "").slice(0, 8)}.png`;
+        a.download = namePrefix + '.png';
         a.click();
         URL.revokeObjectURL(url);
       }, "image/png");
@@ -130,15 +135,17 @@ function downloadSvg(svgCode: string, type: string) {
     img.src = svgBase64;
     return;
   }
+  else if ('svg' === format) {
+    // download as svg
+    const blob = new Blob([svgCode], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = namePrefix + '.svg';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-  // download as svg
-  const blob = new Blob([svgCode], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = namePrefix + '.svg';
-  a.click();
-  URL.revokeObjectURL(url);
 }
 
 function renderMermaid(content: string) {
@@ -151,20 +158,19 @@ function renderMermaid(content: string) {
     const renderSvg = () => {
       const svgId = 'mermaid-svg-'+ divId;
       mermaid.render(svgId, content).then((output: any) => {
-        let time = Date.now();
-        let ele: HTMLElement | null;
-        while (!(ele = document.querySelector('#'+ divId))) {
-          if (Date.now() - time > 2000) {
-            console.error('Mermaid渲染失败，没有找到渲染节点: div#'+ divId);
-            return;
+        let stime = Date.now();
+        let previewPanel: HTMLElement | null;
+        while (!(previewPanel = document.getElementById(divId))) {
+          if (Date.now() - stime > 2000) {
+            break;
           }
         }
-        if (!ele) {
+        if (!previewPanel) {
+          console.error('Mermaid渲染失败，没有找到渲染节点: div#'+ divId);
           return;
         }
 
-        //ele.innerHTML = output.svg;
-        ele.innerHTML = `
+        previewPanel.innerHTML = `
         <div class="milkdown-mermaid-svg"></div>
         <div class="milkdown-mermaid-toolbar">
           <div class="toolbar-item" title="下载">
@@ -176,38 +182,51 @@ function renderMermaid(content: string) {
           </div>
           <button class="toolbar-item" title="缩小" data-action="zoomout">${zoomOutIcon}</button>
           <button class="toolbar-item" title="放大" data-action="zoomin">${zoomInIcon}</button>
-          <button class="toolbar-item" title="全屏查看" data-action="fullscreen">${fullscreenIcon}</button>
+          <button class="toolbar-item" title="自适应" data-action="fit">${fitViewportIcon}</button>
+          <button class="toolbar-item" title="切换全屏模式" data-action="fullscreen">${fullscreenIcon}</button>
         </div>
         `;
-
-        const svgPanel = ele.querySelector('.milkdown-mermaid-svg');
+      
+        const svgCode = output.svg;
+        const svgPanel = previewPanel.querySelector('.milkdown-mermaid-svg') as HTMLElement;
         if (!svgPanel) {
+          console.error('Mermaid渲染失败，没有找到渲染节点: .milkdown-mermaid-svg');
           return;
         }
-        const svgCode = output.svg;
         svgPanel.innerHTML = svgCode;
-        
         const svgImg = document.querySelector('#'+ svgId);
         if (!svgImg) {
           return;
         }
+
         // 绑定zoom-pan能力
-        const pz = panzoom(svgImg as SVGElement, {
-          maxZoom: 10,
-          minZoom: 0.1,
-          smoothScroll: false,
-          beforeWheel: function(e) {
-            // 按住ctrl+鼠标滚轮缩放
-            const shouldIgnore = !e.ctrlKey;
-            return shouldIgnore;
+        const svgViewBox = svgImg.getAttribute('viewBox')?.split(' ').map(Number) || [];
+        const svgWidth = Math.round(svgViewBox[2] || svgImg.clientWidth || svgImg.getBoundingClientRect().width);
+        const svgHeight = Math.round(svgViewBox[3] || svgImg.clientHeight || svgImg.getBoundingClientRect().height);
+        previewPanel.style.height = previewPanel.dataset.height = Math.round(svgHeight + 20) + 'px';
+        svgPanel.style.width = svgWidth + 'px';
+        svgPanel.style.height = svgHeight + 'px';
+
+        const pz = new PanZoom(previewPanel, {
+          transformElement: svgPanel,
+          width: svgWidth,
+          height: svgHeight,
+          fitOnInit: true,
+          beforeWheel: (e) => {
+            // Ctrl + 滚轮缩放
+            return !e.ctrlKey && !e.metaKey; 
           }
         });
 
-        const toolbar = ele.querySelector('.milkdown-mermaid-toolbar');
+        const toolbar = previewPanel.querySelector('.milkdown-mermaid-toolbar');
         if (!toolbar) {
           return;
         }
         toolbar.querySelectorAll('[data-action]').forEach(ele => {
+          ele.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
           ele.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -216,17 +235,28 @@ function renderMermaid(content: string) {
               case 'zoomin':
               case 'zoomout':
                 if (pz) {
-                  let rect = (svgImg as SVGGraphicsElement).getBBox();
-                  let cx = rect.x + rect.width/2;
-                  let cy = rect.y + rect.height/2;
-                  pz.smoothZoom(cx, cy, 'zoomout' === action ? 0.5 : 1.5);
+                  'zoomout' === action ? pz.scaleDown() : pz.scaleUp();
                 }
+                break;
+              case 'fit':
+                pz && pz.fit();
                 break;
               case 'download_svg':
                 downloadSvg(svgCode, 'svg');
                 break;
               case 'download_png':
                 downloadSvg(svgCode, 'png');
+                break;
+              case 'fullscreen':
+                previewPanel.classList.toggle('fullscreen');
+                if (previewPanel.classList.contains('fullscreen')) {
+                  previewPanel.style.height = 'calc(100% - 100px)';
+                  previewPanel.style.width = 'calc(100% - 100px)';
+                } else {
+                  previewPanel.style.height = previewPanel.dataset.height || 'auto';
+                  previewPanel.style.width = 'auto';
+                }
+                pz && pz.fit();
                 break;
             }
           });
@@ -236,8 +266,8 @@ function renderMermaid(content: string) {
     };
 
     try {
-      // 先尝试完整解析, 为了增量渲染正确的部分
-      // 配置了 suppressErrors = true, 当语法无效时不会抛出错误异常,而是返回false
+      // 先验证语法,提前抛出错误, 为了增量渲染正确的部分
+      // 配置了 suppressErrors = false, 当语法无效时抛出错误异常
       mermaid.parse(content, {suppressErrors: false})
         .then(() => {
           renderSvg();
@@ -249,6 +279,7 @@ function renderMermaid(content: string) {
     } catch (e) {
       console.error(e);
     }
+
   })(graphId);
 
   return dom;

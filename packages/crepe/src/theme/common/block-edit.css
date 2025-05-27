@@ -260,18 +260,48 @@
   /* mermaid */
   .milkdown-mermaid-preview-panel {
     position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
+  .milkdown-mermaid-preview-panel.fullscreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 100px);
+    height: calc(100% - 100px);
+    z-index: 9999;
+    background-color: var(--crepe-color-surface);
+    box-shadow: 0 0 0 1px rgba(17, 20, 24, .1), 0 1px 1px rgba(17, 20, 24, .2), 0 2px 6px rgba(17, 20, 24, .2);
+    border-radius: 5px;
+
+    & .milkdown-mermaid-svg {
+      height: 100%;
+      max-height: 100%;
+    }
+  }
+  
   .milkdown-mermaid-svg {
+    flex: none;
+    position: relative;
     min-height: 100px;
-    max-height: 60vh;
+    transform-origin: center;
+    backface-visibility: hidden;
     overflow: hidden;
     -webkit-user-select: none;
     user-select: none;
   }
+  .milkdown-mermaid-svg > div {
+    flex: 1 1;
+    width: 100%;  
+  }
   .milkdown-mermaid-toolbar {
     position: absolute;
-    right: 0;
-    bottom: 0;
+    right: 5px;
+    bottom: 5px;
     display: flex;
     gap: 2px;
     align-items: center;
