@@ -559,6 +559,10 @@ export const CopilotView = defineComponent<CopilotViewProps>({
         });
 
         textarea.addEventListener('keydown', (e: KeyboardEvent) => {
+          if (e.key === 'Escape') {
+            discard(ctx);
+            return;
+          }
           if (e.key === 'Enter' && e.ctrlKey) {
             sendUserInputPrompt();
           }
@@ -689,7 +693,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
               )?'shown':''
             )}>
               <div class="milkdown-copilot-input-wrap" ref={promptInputWrapRef}>
-                <div class="copilot-input-icon"><Icon icon={aiIcon2}/></div>
+                <div class="copilot-input-icon"><Icon icon={aiIcon}/></div>
                 <div class="copilot-input">
                   <textarea rows="1" cols="20" placeholder="输入要求，或从下方选择场景提问" ref={promptInputRef}></textarea>
                 </div>
@@ -730,7 +734,7 @@ export const CopilotView = defineComponent<CopilotViewProps>({
                   <div class="milkdown-dropdown-menu-divider"></div>
                   <div class="milkdown-dropdown-menu-item milkdown-dropdown-submenu">
                     <span class="milkdown-dropdown-menu-icon"><Icon icon={translationIcon}/></span>
-                    <span class="milkdown-dropdown-menu-text">翻译</span>
+                    <span class="milkdown-dropdown-menu-text">翻译为</span>
                     <div class="milkdown-dropdown-submenu-icon"><Icon icon={chevronRight}/></div>
                     <div class="milkdown-dropdown-menu">
                       <div class="milkdown-dropdown-menu-item" onClick={onClick((ctx) => translate(ctx, 'english'))}>

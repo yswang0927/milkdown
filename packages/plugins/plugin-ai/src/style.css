@@ -3,7 +3,7 @@
     z-index: 10;
 }
 .milkdown-copilot-viewpanel {
-    padding: 2px;
+    padding: 1px;
     margin: 0;
     font-size: 14px;
     font-weight: 400;
@@ -254,7 +254,7 @@
     box-sizing: border-box;
 }
 .milkdown-copilot-actions button:hover {
-    background-color: rgba(30,100,255,.1);
+    background-color: rgba(2,133,255,.1);
     color: #0285ff;
 }
 .milkdown-copilot-actions button.btn-intent-warn {
