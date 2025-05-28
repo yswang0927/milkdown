@@ -1,10 +1,11 @@
 .milkdown .ProseMirror *::selection {
-    background: rgba(251, 179, 96, 0.5);
+    background-color: rgba(2,133,255,.1);
+    color: var(--crepe-color-on-background, #000);
 }
 
 .milkdown .ProseMirror .ProseMirror-selectednode,
 .milkdown .ProseMirror:not(.ProseMirror-hideselection) .ProseMirror-selection-mark {
-    background: rgba(251, 179, 96, 0.5);
+    background-color: rgba(2,133,255,.1);
     border-radius: 2px;
     outline: none;
 }
