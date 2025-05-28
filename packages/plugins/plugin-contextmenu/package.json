@@ -1,13 +1,19 @@
 {
-  "name": "@milkdown/mdeditor",
+  "name": "@milkdown/plugin-contextmenu",
+  "description": "右键菜单插件",
   "type": "module",
-  "version": "1.0.0",
+  "version": "7.11.0",
   "license": "MIT",
+  "keywords": [
+    "milkdown",
+    "milkdown plugin"
+  ],
   "sideEffects": false,
   "exports": {
     ".": {
       "import": "./src/index.ts"
-    }
+    },
+    "./style.css": "./src/style.css"
   },
   "main": "./src/index.ts",
   "publishConfig": {
@@ -17,7 +23,8 @@
       ".": {
         "import": "./lib/index.es.js",
         "types": "./lib/index.d.ts"
-      }
+      },
+      "./style.css": "./lib/style.css"
     }
   },
   "files": [
@@ -25,19 +32,10 @@
     "src"
   ],
   "scripts": {
-    "dev": "vite",
     "build": "vite build"
   },
   "dependencies": {
-    "@milkdown/core": "workspace:*",
-    "@milkdown/crepe": "workspace:*",
-    "@milkdown/ctx": "workspace:*",
     "@milkdown/kit": "workspace:*",
-    "@milkdown/prose": "workspace:*",
-    "@milkdown/plugin-ai": "workspace:*",
-    "@milkdown/plugin-contextmenu": "workspace:*",
-    "@milkdown/plugin-highlightmark": "workspace:*",
-    "@milkdown/plugin-selectionmark": "workspace:*",
-    "core-js": "^3.40.0"
+    "tslib": "^2.8.1"
   }
 }

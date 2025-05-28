@@ -231,7 +231,7 @@ flowchart TD
         //mdContent = 'Hotel California';
 
         const editor = window.$mdEditor = new MarkdownEditor('#editor', {
-            defaultValue: mdContent,
+            defaultValue: mdContent2,
             editable: true,
             ai: {
                 enabled: true,
@@ -245,6 +245,9 @@ flowchart TD
             onContentChanged: (mdContent) => {
                 //console.log(mdContent);
                 updateToc(editor.getToc());
+            },
+            onSelectionUpdated: (selectionText, selection, prevSelection) => {
+                console.log('>>> selection changed: ', selection, selectionText);
             }
         });
     </script>

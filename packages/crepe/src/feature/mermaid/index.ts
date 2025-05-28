@@ -130,7 +130,7 @@ function downloadSvg(svgCode: string, format: string) {
         URL.revokeObjectURL(url);
       }, "image/png");
     });
-    const base64String = btoa(svgCode);
+    const base64String = window.btoa(unescape(encodeURIComponent(svgCode)));
     const svgBase64 = `data:image/svg+xml;base64,${base64String}`;
     img.src = svgBase64;
     return;

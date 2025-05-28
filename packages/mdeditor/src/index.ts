@@ -2,21 +2,25 @@
 import 'core-js/actual';
 
 import { Crepe } from '@milkdown/crepe';
-import { editorViewCtx } from "@milkdown/core";
 import { outline, replaceAll, insert, getHTML } from '@milkdown/kit/utils';
 import { listenerCtx } from '@milkdown/kit/plugin/listener'
-
+import { editorViewCtx } from "@milkdown/kit/core"
 import type { Uploader } from "@milkdown/kit/plugin/upload";
 import { upload, uploadConfig } from "@milkdown/kit/plugin/upload";
 import { Decoration } from '@milkdown/prose/view';
 import type { Schema, Node } from '@milkdown/prose/model';
+import type { Selection } from '@milkdown/prose/state'
 
 import { aiPlugin, aiConfig } from '@milkdown/plugin-ai';
+import { selectionMarkPlugin } from '@milkdown/plugin-selectionmark';
+import { contextMenuPlugin, contextMenuConfig } from '@milkdown/plugin-contextmenu';
 
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
 import "@milkdown/plugin-ai/style.css"
+import "@milkdown/plugin-selectionmark/style.css"
+import "@milkdown/plugin-contextmenu/style.css"
 
 import "./index.css";
 
@@ -34,8 +38,9 @@ interface EditorOptions {
     topP: number
   }
   onUpload?: (file: File) => Promise<string>
-  onContentChanged?: (markdown: string, editor: MarkdownEditor) => void
   onReady?: (editor: MarkdownEditor) => void
+  onContentChanged?: (markdown: string, editor: MarkdownEditor) => void
+  onSelectionUpdated?: (selectionText: string | null, selection: Selection, prevSelection: Selection | null, doc: Node) => void
   onCopyLink?: (value: string) => void
 }
 
@@ -54,9 +59,7 @@ export class MarkdownEditor {
     }, options || {});
 
     this.crepe = null;
-
     this.inited = false;
-
     this.init();
   }
 
@@ -193,23 +196,98 @@ export class MarkdownEditor {
         }));
       }
 
+      // 配置上下文菜单
+      ctx.update(contextMenuConfig.key, () => ({
+        enabled: isEditable,
+        menus: (ctx, e) => {
+          const view = ctx.get(editorViewCtx);
+          let hasSelectionText = false;
+          if (view && view.state) {
+            const selection = view.state.selection;
+            hasSelectionText = !selection.empty;
+
+            /*const coords = view.posAtCoords({ left: e.clientX, top: e.clientY });
+            if (coords) {
+              const $pos = view.state.doc.resolve(coords.pos);
+              const node = $pos.nodeAfter;
+              console.log(node);
+            }*/
+          }
+
+          return [
+            { id:'copy', label: '复制', disabled: !hasSelectionText },
+            { divider: true },
+            { id:'text2graph', label: '文生图表', disabled: !hasSelectionText },
+            { divider: true },
+            { label: '翻译', disabled: !hasSelectionText, 
+              chidren: [
+                {label: '中文', id: 'translate-zh'},
+                {label: '英文', id: 'translate-en'},
+                {label: '日文', id: 'translate-ja'},
+                {label: '韩文', id: 'translate-ko'},
+                {label: '法语', id: 'translate-fr'},
+                {label: '德语', id: 'translate-de'},
+              ] 
+            }
+          ];
+        },
+        click: (item, ctx, e) => {
+          if (!item || item.disabled) {
+            return;
+          }
+
+          if (item.id === 'copy') {
+            const view = ctx.get(editorViewCtx);
+            if (view && view.state) {
+              const selection = view.state.selection;
+              if (!selection.empty) {
+                const doc = view.state.doc;
+                const selectionText = doc.textBetween(selection.from, selection.to);
+                navigator.clipboard.writeText(selectionText).then(() => {
+                  console.log('已复制选中的文本到剪贴板:', selectionText);
+                }).catch(err => {
+                  console.error('复制失败:', err);
+                });
+              }
+            }
+          }
+        }
+      }));
+
       // 监听事件
       const listener = ctx.get(listenerCtx);
 
-      const hasContentChangeListen = (typeof this.options.onContentChanged === 'function');
-      if (hasContentChangeListen) {
-        let callback = this.options.onContentChanged ?? function() {};
+      const onContentChanged = this.options.onContentChanged;
+      if (typeof onContentChanged === 'function') {
         listener.markdownUpdated((_ctx, markdown, prevMarkdown) => {
           if (markdown !== prevMarkdown) {
-            callback(markdown, this);
+            onContentChanged(markdown, this);
           }
         });
       }
+
+      // 支持监听selection事件
+      /*const onSelectionUpdated = this.options.onSelectionUpdated;
+      if (typeof onSelectionUpdated === 'function') {
+        listener.selectionUpdated((ctx, selection, prevSelection) => {
+          if (!ctx || !selection) {
+            return;
+          }
+          const view = ctx.get(editorViewCtx);
+          if (view && view.state) {
+            const { doc } = view.state;
+            let selectionText = doc ? doc.textBetween(selection.from, selection.to) : '';
+            onSelectionUpdated(selectionText, selection, prevSelection, doc);
+          }
+        });
+      }*/
 
     });
 
     crepe.editor.use(upload);
     crepe.editor.use(aiPlugin);
+    crepe.editor.use(selectionMarkPlugin);
+    crepe.editor.use(contextMenuPlugin);
 
     crepe.create().then(() => {
       this.inited = true;

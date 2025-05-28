@@ -25,9 +25,20 @@
     -webkit-user-select: none;
     user-select: none;
   }
-  .milkdown-dropdown-menu-item:hover {
+  .milkdown-dropdown-menu-item:not(.disabled):hover,
+  .milkdown-dropdown-menu-item:not([disabled]):hover {
     background-color: var(--crepe-color-hover);
     border-radius: 3px;
+  }
+  .milkdown-dropdown-menu-item.disabled,
+  .milkdown-dropdown-menu-item[disabled] {
+    color: rgba(0, 0, 0, 0.3);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .milkdown-dropdown-menu-item.disabled svg,
+  .milkdown-dropdown-menu-item[disabled] svg {
+    opacity: 0.3;
   }
 
   .milkdown-dropdown-menu-icon {
@@ -44,6 +55,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .milkdown-dropdown-menu-divider {

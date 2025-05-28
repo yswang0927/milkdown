@@ -31,10 +31,6 @@
 .milkdown .ProseMirror {
     padding: 0;
 }
-.milkdown .ProseMirror .ProseMirror-selectednode {
-    background-color: #d9eafc;
-    border-radius: 3px;
-}
 .milkdown .ProseMirror p {
     font-size: 1em;
     line-height: 1.8;

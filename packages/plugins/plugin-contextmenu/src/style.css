@@ -1,0 +1,7 @@
+.milkdown {
+    .milkdown-contextmenu {
+        flex: none;
+        position: absolute;
+        z-index: 1000;
+    }
+}
