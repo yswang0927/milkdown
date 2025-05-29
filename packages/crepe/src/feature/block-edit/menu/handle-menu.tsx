@@ -138,17 +138,17 @@ export const HandleMenuComponent = defineComponent<HandleMenuProps>({
           break;
       }
 
-      hide();
+      //hide();
     }
 
     return () => {
       return (
-        <div ref={host} class="milkdown-handle-menu-items" onPointerdown={(e) => e.preventDefault()}>
-          <div class="menu-header">转换为</div>
+        <div ref={host} class="milkdown-handle-menu-wrap" onPointerdown={(e) => e.stopPropagation()}>
+          <div class="milkdown-handle-menu-header">转换为</div>
           {menuItems.map((items) => (
-            <div class="menu-items">
+            <div class="milkdown-handle-menu-items">
               {items.map((item) => (
-                <div class="menu-item">
+                <div class="milkdown-handle-menu-item">
                   <button title={item.title} onClick={onClick(ctx => handleClick(ctx, item.action))}>
                     <Icon icon={item.icon} />
                   </button>

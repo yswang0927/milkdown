@@ -167,7 +167,8 @@ function isSelectionAtEndOfNode(selection: Selection) {
   return offset === parent.content.size
 }
 
-// yswang add handle-menu
+
+// ================= yswang add handle-menu= ===================
 export interface HanleMenuApiType {
   show: (trigger: HTMLElement) => void
   hide: () => void
@@ -189,11 +190,13 @@ export function configureHandleMenu(ctx: Ctx, config?: BlockEditFeatureConfig) {
 class HandleMenuView implements PluginView {
   readonly #content: HTMLElement
   readonly #app: App
-  readonly #menuProvider: SlashProvider
+  //readonly #menuProvider: SlashProvider
 
   constructor(ctx: Ctx, view: EditorView, config?: BlockEditFeatureConfig) {
     const content = document.createElement('div');
     content.className = 'milkdown-handle-menu';
+    content.style.display = 'none';
+    (view.dom.parentElement || document.body).appendChild(content);
 
     const show = ref(false);
     const hide = this.hide;
@@ -210,20 +213,22 @@ class HandleMenuView implements PluginView {
 
     this.#content = content;
 
-    this.#menuProvider = new SlashProvider({
+    /*this.#menuProvider = new SlashProvider({
       content: this.#content,
       debounce: 20,
-      shouldShow(this: SlashProvider, _view: EditorView) {
+      shouldShow: (view) => {
+        console.log('>> shouldMenushow: ', this.menuShow);
+        console.log('>> view-hasfocus: '+ view.hasFocus());
         return false;
       }
-    });
+    });*/
 
-    this.#menuProvider.onShow = () => {
+    /*this.#menuProvider.onShow = () => {
       show.value = true
     }
     this.#menuProvider.onHide = () => {
       show.value = false
-    }
+    }*/
 
     this.update(view)
 
@@ -234,11 +239,14 @@ class HandleMenuView implements PluginView {
   }
 
   update = (view: EditorView) => {
-    this.#menuProvider.update(view)
+    //this.#menuProvider.update(view);
   }
 
   show = (trigger: HTMLElement) => {
-    this.#menuProvider.show()
+    trigger.classList.add('active');
+    //this.#menuProvider.show();
+    this.#content.style.display = 'block';
+    this.#content.style.opacity = '0';
     computePosition(trigger, this.#content, {
       placement: 'bottom-start',
       middleware: [flip(), shift(), offset({mainAxis: 4, crossAxis: 0})]
@@ -247,16 +255,27 @@ class HandleMenuView implements PluginView {
         left: `${x}px`,
         top: `${y}px`,
       });
+      this.#content.style.opacity = '1';
     });
+
+    document.addEventListener('pointerdown', (e) => {
+      if (this.#content.contains(e.target as Node)) {
+        return false;
+      }
+      this.hide();
+      trigger.classList.remove('active');
+      return false;
+    }, {once: true});
   }
 
   hide = () => {
-    this.#menuProvider.hide()
+    //this.#menuProvider.hide();
+    this.#content.style.display = 'none';
   }
 
   destroy = () => {
-    this.#menuProvider.destroy()
-    this.#app.unmount()
-    this.#content.remove()
+    this.#app.unmount();
+    //this.#menuProvider.destroy();
+    this.#content.remove();
   }
 }

@@ -197,7 +197,7 @@ export class MarkdownEditor {
       }
 
       // 配置上下文菜单
-      ctx.update(contextMenuConfig.key, () => ({
+      /*ctx.update(contextMenuConfig.key, () => ({
         enabled: isEditable,
         menus: (ctx, e) => {
           const view = ctx.get(editorViewCtx);
@@ -205,13 +205,6 @@ export class MarkdownEditor {
           if (view && view.state) {
             const selection = view.state.selection;
             hasSelectionText = !selection.empty;
-
-            /*const coords = view.posAtCoords({ left: e.clientX, top: e.clientY });
-            if (coords) {
-              const $pos = view.state.doc.resolve(coords.pos);
-              const node = $pos.nodeAfter;
-              console.log(node);
-            }*/
           }
 
           return [
@@ -252,7 +245,7 @@ export class MarkdownEditor {
             }
           }
         }
-      }));
+      }));*/
 
       // 监听事件
       const listener = ctx.get(listenerCtx);
@@ -287,7 +280,7 @@ export class MarkdownEditor {
     crepe.editor.use(upload);
     crepe.editor.use(aiPlugin);
     crepe.editor.use(selectionMarkPlugin);
-    crepe.editor.use(contextMenuPlugin);
+    //crepe.editor.use(contextMenuPlugin);
 
     crepe.create().then(() => {
       this.inited = true;

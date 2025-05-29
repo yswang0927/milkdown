@@ -39,8 +39,6 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
     // yswang
     const handleButton = ref<HTMLDivElement>()
 
-    const handleIsDragTimeRef = ref<number>(0)
-
     return () => {
       return (
         <>
@@ -49,7 +47,7 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
             class="operation-item"
             onPointerdown={(e) => {
               e.preventDefault()
-              e.stopPropagation()
+              //e.stopPropagation()
               addButton.value?.classList.add('active')
             }}
             onPointerup={(e) => {
@@ -64,16 +62,13 @@ export const BlockHandle = defineComponent<BlockHandleProps>({
           <div 
             class="operation-item"
             ref={handleButton}
-            onPointerdown={(e) => {
+            onPointerdown={() => {
               handleButton.value?.classList.add('active');
-              handleIsDragTimeRef.value = Date.now();
             }}
             onPointerup={(e) => {
-              //e.stopPropagation();
+              e.stopPropagation();
               handleButton.value?.classList.remove('active');
-              if (Date.now() - handleIsDragTimeRef.value < 500) {
-                onHandleClick(handleButton.value);
-              }
+              onHandleClick(handleButton.value);
             }}
           >
             <Icon icon={handleIcon()} />
