@@ -81,6 +81,148 @@ export const defineFeature: DefineFeature<MermaidFeatureConfig> = (
     .use(blockMermaidSchema)
 }
 
+function renderMermaid(content: string) {
+  const graphId = 'mermaid-'+ uuid();
+  let dom = document.createElement('div');
+  dom.className = 'milkdown-mermaid-preview-panel';
+  dom.id = graphId;
+  
+  (function(divId) {
+    try {
+      // 先验证语法,提前抛出错误, 为了增量渲染正确的部分
+      // 配置了 suppressErrors = false, 当语法无效时抛出错误异常
+      mermaid.parse(content, {suppressErrors: false})
+        .then(() => {
+          renderSvg(divId, content);
+        })
+        .catch((err) => {
+          const previewDiv = document.getElementById(divId);
+          if (previewDiv) {
+            const svgDiv = previewDiv.querySelector('div.milkdown-mermaid-svg');
+            if (!svgDiv) {
+              previewDiv.innerHTML = `<span style="color:#DC362E">语法错误: ${err.message}</span>`;
+            }
+          } else {
+            console.error('>>>>> 渲染错误:', err);
+          }
+        });
+      
+    } catch (e) {
+      console.error(e);
+    }
+
+  })(graphId);
+
+  return dom;
+}
+
+function renderSvg(divId: string, svgContent: string) {
+  const svgId = 'mermaid-svg-'+ divId;
+  mermaid.render(svgId, svgContent).then((output: any) => {
+    let stime = Date.now();
+    let previewPanel: HTMLElement | null;
+    while (!(previewPanel = document.getElementById(divId))) {
+      if (Date.now() - stime > 2000) {
+        break;
+      }
+    }
+    if (!previewPanel) {
+      console.error('Mermaid渲染失败，没有找到渲染节点: div#'+ divId);
+      return;
+    }
+
+    previewPanel.innerHTML = `
+    <div class="milkdown-mermaid-svg"></div>
+    <div class="milkdown-mermaid-toolbar">
+      <div class="toolbar-item" title="下载">
+        <span class="toolbar-item-icon">${downloadIcon}</span>
+        <div class="milkdown-dropdown-menu">
+          <div class="milkdown-dropdown-menu-item" data-action="download_svg">下载SVG</div>
+          <div class="milkdown-dropdown-menu-item" data-action="download_png">下载图片</div>
+        </div>
+      </div>
+      <button class="toolbar-item" title="缩小" data-action="zoomout">${zoomOutIcon}</button>
+      <button class="toolbar-item" title="放大" data-action="zoomin">${zoomInIcon}</button>
+      <button class="toolbar-item" title="自适应" data-action="fit">${fitViewportIcon}</button>
+      <button class="toolbar-item" title="切换全屏模式" data-action="fullscreen">${fullscreenIcon}</button>
+    </div>
+    `;
+  
+    const svgCode = output.svg;
+    const svgPanel = previewPanel.querySelector('.milkdown-mermaid-svg') as HTMLElement;
+    if (!svgPanel) {
+      console.error('Mermaid渲染失败，没有找到渲染节点: .milkdown-mermaid-svg');
+      return;
+    }
+    svgPanel.innerHTML = svgCode;
+    const svgImg = document.querySelector('#'+ svgId);
+    if (!svgImg) {
+      return;
+    }
+
+    // 绑定zoom-pan能力
+    const svgViewBox = svgImg.getAttribute('viewBox')?.split(' ').map(Number) || [];
+    const svgWidth = Math.round(svgViewBox[2] || svgImg.clientWidth || svgImg.getBoundingClientRect().width) + 10;
+    const svgHeight = Math.round(svgViewBox[3] || svgImg.clientHeight || svgImg.getBoundingClientRect().height) + 10;
+    previewPanel.style.height = previewPanel.dataset.height = Math.round(svgHeight + 20) + 'px';
+    svgPanel.style.width = svgWidth + 'px';
+    svgPanel.style.height = svgHeight + 'px';
+
+    const pz = new PanZoom(previewPanel, {
+      transformElement: svgPanel,
+      width: svgWidth,
+      height: svgHeight,
+      fitOnInit: true,
+      beforeWheel: (e) => {
+        // Ctrl + 滚轮缩放
+        return !e.ctrlKey && !e.metaKey; 
+      }
+    });
+
+    const toolbar = previewPanel.querySelector('.milkdown-mermaid-toolbar');
+    if (!toolbar) {
+      return;
+    }
+    toolbar.querySelectorAll('[data-action]').forEach(ele => {
+      ele.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+      });
+      ele.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = (e.currentTarget as HTMLElement).getAttribute('data-action');
+        switch (action) {
+          case 'zoomin':
+          case 'zoomout':
+            if (pz) {
+              'zoomout' === action ? pz.scaleDown() : pz.scaleUp();
+            }
+            break;
+          case 'fit':
+            pz && pz.fit();
+            break;
+          case 'download_svg':
+            downloadSvg(svgCode, 'svg');
+            break;
+          case 'download_png':
+            downloadSvg(svgCode, 'png');
+            break;
+          case 'fullscreen':
+            previewPanel.classList.toggle('fullscreen');
+            if (previewPanel.classList.contains('fullscreen')) {
+              previewPanel.style.height = 'calc(100% - 100px)';
+              previewPanel.style.width = 'calc(100% - 100px)';
+            } else {
+              previewPanel.style.height = previewPanel.dataset.height || 'auto';
+              previewPanel.style.width = 'auto';
+            }
+            pz && pz.fit();
+            break;
+        }
+      });
+    });
+
+  });
+}
 
 function downloadSvg(svgCode: string, format: string) {
   const namePrefix = `mermaid-diagram-${new Date().toISOString().replace(/-/g, "").slice(0, 8)}`;
@@ -146,141 +288,4 @@ function downloadSvg(svgCode: string, format: string) {
     URL.revokeObjectURL(url);
   }
 
-}
-
-function renderMermaid(content: string) {
-  const graphId = 'mermaid-'+ uuid();
-  let dom = document.createElement('div');
-  dom.className = 'milkdown-mermaid-preview-panel';
-  dom.id = graphId;
-  
-  (function(divId) {
-    const renderSvg = () => {
-      const svgId = 'mermaid-svg-'+ divId;
-      mermaid.render(svgId, content).then((output: any) => {
-        let stime = Date.now();
-        let previewPanel: HTMLElement | null;
-        while (!(previewPanel = document.getElementById(divId))) {
-          if (Date.now() - stime > 2000) {
-            break;
-          }
-        }
-        if (!previewPanel) {
-          console.error('Mermaid渲染失败，没有找到渲染节点: div#'+ divId);
-          return;
-        }
-
-        previewPanel.innerHTML = `
-        <div class="milkdown-mermaid-svg"></div>
-        <div class="milkdown-mermaid-toolbar">
-          <div class="toolbar-item" title="下载">
-            <span class="toolbar-item-icon">${downloadIcon}</span>
-            <div class="milkdown-dropdown-menu">
-              <div class="milkdown-dropdown-menu-item" data-action="download_svg">下载SVG</div>
-              <div class="milkdown-dropdown-menu-item" data-action="download_png">下载图片</div>
-            </div>
-          </div>
-          <button class="toolbar-item" title="缩小" data-action="zoomout">${zoomOutIcon}</button>
-          <button class="toolbar-item" title="放大" data-action="zoomin">${zoomInIcon}</button>
-          <button class="toolbar-item" title="自适应" data-action="fit">${fitViewportIcon}</button>
-          <button class="toolbar-item" title="切换全屏模式" data-action="fullscreen">${fullscreenIcon}</button>
-        </div>
-        `;
-      
-        const svgCode = output.svg;
-        const svgPanel = previewPanel.querySelector('.milkdown-mermaid-svg') as HTMLElement;
-        if (!svgPanel) {
-          console.error('Mermaid渲染失败，没有找到渲染节点: .milkdown-mermaid-svg');
-          return;
-        }
-        svgPanel.innerHTML = svgCode;
-        const svgImg = document.querySelector('#'+ svgId);
-        if (!svgImg) {
-          return;
-        }
-
-        // 绑定zoom-pan能力
-        const svgViewBox = svgImg.getAttribute('viewBox')?.split(' ').map(Number) || [];
-        const svgWidth = Math.round(svgViewBox[2] || svgImg.clientWidth || svgImg.getBoundingClientRect().width) + 10;
-        const svgHeight = Math.round(svgViewBox[3] || svgImg.clientHeight || svgImg.getBoundingClientRect().height) + 10;
-        previewPanel.style.height = previewPanel.dataset.height = Math.round(svgHeight + 20) + 'px';
-        svgPanel.style.width = svgWidth + 'px';
-        svgPanel.style.height = svgHeight + 'px';
-
-        const pz = new PanZoom(previewPanel, {
-          transformElement: svgPanel,
-          width: svgWidth,
-          height: svgHeight,
-          fitOnInit: true,
-          beforeWheel: (e) => {
-            // Ctrl + 滚轮缩放
-            return !e.ctrlKey && !e.metaKey; 
-          }
-        });
-
-        const toolbar = previewPanel.querySelector('.milkdown-mermaid-toolbar');
-        if (!toolbar) {
-          return;
-        }
-        toolbar.querySelectorAll('[data-action]').forEach(ele => {
-          ele.addEventListener('pointerdown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-          ele.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const action = (e.currentTarget as HTMLElement).getAttribute('data-action');
-            switch (action) {
-              case 'zoomin':
-              case 'zoomout':
-                if (pz) {
-                  'zoomout' === action ? pz.scaleDown() : pz.scaleUp();
-                }
-                break;
-              case 'fit':
-                pz && pz.fit();
-                break;
-              case 'download_svg':
-                downloadSvg(svgCode, 'svg');
-                break;
-              case 'download_png':
-                downloadSvg(svgCode, 'png');
-                break;
-              case 'fullscreen':
-                previewPanel.classList.toggle('fullscreen');
-                if (previewPanel.classList.contains('fullscreen')) {
-                  previewPanel.style.height = 'calc(100% - 100px)';
-                  previewPanel.style.width = 'calc(100% - 100px)';
-                } else {
-                  previewPanel.style.height = previewPanel.dataset.height || 'auto';
-                  previewPanel.style.width = 'auto';
-                }
-                pz && pz.fit();
-                break;
-            }
-          });
-        });
-
-      });
-    };
-
-    try {
-      // 先验证语法,提前抛出错误, 为了增量渲染正确的部分
-      // 配置了 suppressErrors = false, 当语法无效时抛出错误异常
-      mermaid.parse(content, {suppressErrors: false})
-        .then(() => {
-          renderSvg();
-        })
-        .catch((err) => {
-          console.error('>>>>> 渲染错误:', err);
-        });
-      
-    } catch (e) {
-      console.error(e);
-    }
-
-  })(graphId);
-
-  return dom;
 }

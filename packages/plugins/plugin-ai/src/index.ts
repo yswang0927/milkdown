@@ -69,6 +69,7 @@ function applyHint(ctx: Ctx, content: string, insert: boolean = false) {
     // 替换选中内容
     view.dispatch(tr.setMeta(copilotKey, {copilotShow: false}).replaceSelection(slice));
   }
+  view.focus();
 }
 
 const copilotPlugin = $prose((ctx: Ctx) => {
